@@ -7,8 +7,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ServerMainTest {
-    @Test public void testServerMainHasAGreeting() {
+    @Test public void testServerMainCanBeInstantiated() {
         ServerMain classUnderTest = new ServerMain();
-        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
+        assertNotNull("ServerMain should be able to be instantiated", classUnderTest);
     }
 }
