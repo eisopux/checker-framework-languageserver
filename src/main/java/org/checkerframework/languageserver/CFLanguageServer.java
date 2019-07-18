@@ -29,6 +29,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     @Override
     public void connect(LanguageClient client) {
         this.client = client;
+        this.logger.addHandler(new LogHandler(client));
     }
 
     /**
