@@ -28,5 +28,5 @@ dependencies {
 
 application {
     // Define the main class for the application
-    mainClassName = 'org.checkerframework.lsp.ServerMain'
+    mainClassName = 'org.checkerframework.languageserver.ServerMain'
 }

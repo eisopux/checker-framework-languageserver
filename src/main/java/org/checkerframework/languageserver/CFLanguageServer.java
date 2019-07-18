@@ -1,7 +1,9 @@
-package org.checkerframework.lsp;
+package org.checkerframework.languageserver;
 
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.*;
 
 import java.util.concurrent.CompletableFuture;
@@ -16,6 +18,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
 
     private final CFTextDocumentService textDocumentService;
     private final CFWorkspaceService workspaceService;
+    private String workspaceRoot;
 
     public CFLanguageServer() {
         this.client = null;
@@ -46,7 +49,11 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      */
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-        return null;
+        this.workspaceRoot = params.getRootUri();
+
+        ServerCapabilities capabilities = new ServerCapabilities();
+        capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
+        return CompletableFuture.completedFuture(new InitializeResult());
     }
 
     /**
@@ -67,6 +74,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     @Override
     public void exit() {
         // no operation
+        // TODO: exit process
     }
 
     /**

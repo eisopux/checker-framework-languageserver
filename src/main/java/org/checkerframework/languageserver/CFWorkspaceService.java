@@ -1,4 +1,4 @@
-package org.checkerframework.lsp;
+package org.checkerframework.languageserver;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;

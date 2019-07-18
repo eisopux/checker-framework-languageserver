@@ -1,4 +1,4 @@
-package org.checkerframework.lsp;
+package org.checkerframework.languageserver;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +12,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
  */
 public class ServerMain {
     /**
-     * The entry point of application. Sets up and launches the {@link org.checkerframework.lsp.CFLanguageServer}.
+     * The entry point of application. Sets up and launches the {@link org.checkerframework.languageserver.CFLanguageServer}.
      *
      * @see <a href="https://github.com/eclipse/lsp4j/blob/7fd8daebc61c1e8c83a0a3f016563e1896582db2/documentation/README.md#launch-and-connect-with-a-languageclient">Launch a language server</a>
      * @param args the input arguments
