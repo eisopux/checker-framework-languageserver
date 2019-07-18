@@ -14,6 +14,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     // TODO: maybe use CompletableFuture
     private LanguageClient client = null;
 
+    @Override
     public void connect(LanguageClient client) {
         this.client = client;
     }
@@ -34,6 +35,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      *
      * @param params
      */
+    @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
         return null;
     }
@@ -44,20 +46,24 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      * delivered correctly to the client). There is a separate exit notification
      * that asks the server to exit.
      */
+    @Override
     public CompletableFuture<Object> shutdown() {
-        return null;
+        // TODO: copied from example and couldn't find documentation
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
      * A notification to ask the server to exit its process.
      */
+    @Override
     public void exit() {
-
+        // no operation
     }
 
     /**
      * Provides access to the textDocument services.
      */
+    @Override
     public TextDocumentService getTextDocumentService() {
         return null;
     }
@@ -65,6 +71,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     /**
      * Provides access to the workspace services.
      */
+    @Override
     public WorkspaceService getWorkspaceService() {
         return null;
     }
