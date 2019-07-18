@@ -12,7 +12,16 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     private static final Logger logger = Logger.getLogger(CFLanguageServer.class.getName());
 
     // TODO: maybe use CompletableFuture
-    private LanguageClient client = null;
+    private LanguageClient client;
+
+    private final CFTextDocumentService textDocumentService;
+    private final CFWorkspaceService workspaceService;
+
+    public CFLanguageServer() {
+        this.client = null;
+        this.textDocumentService = new CFTextDocumentService(this);
+        this.workspaceService = new CFWorkspaceService(this);
+    }
 
     @Override
     public void connect(LanguageClient client) {
@@ -65,7 +74,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      */
     @Override
     public TextDocumentService getTextDocumentService() {
-        return null;
+        return textDocumentService;
     }
 
     /**
@@ -73,6 +82,6 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      */
     @Override
     public WorkspaceService getWorkspaceService() {
-        return null;
+        return workspaceService;
     }
 }
