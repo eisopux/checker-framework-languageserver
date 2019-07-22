@@ -92,4 +92,14 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     public WorkspaceService getWorkspaceService() {
         return workspaceService;
     }
+
+    /**
+     * Accepts a new configuration set by the user (from {@link CFWorkspaceService}).
+     * The new configuration is then passed to {@link CFTextDocumentService}.
+     *
+     * @param config the new configuration
+     */
+    public void didChangeConfiguration(Settings.Config config) {
+        textDocumentService.didChangeConfiguration(config);
+    }
 }

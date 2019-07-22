@@ -1,15 +1,22 @@
 package org.checkerframework.languageserver;
 
+import com.google.gson.Gson;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import java.util.logging.Logger;
+
 public class CFWorkspaceService implements WorkspaceService {
 
+    private static final Logger logger = Logger.getLogger(CFWorkspaceService.class.getName());
+
     private final CFLanguageServer server;
+    private final Gson gson;
 
     CFWorkspaceService(CFLanguageServer server) {
         this.server = server;
+        this.gson = new Gson();
     }
 
     /**
@@ -20,7 +27,8 @@ public class CFWorkspaceService implements WorkspaceService {
      */
     @Override
     public void didChangeConfiguration(DidChangeConfigurationParams params) {
-
+        logger.info(String.format("Updated configuration: %s", params.toString()));
+        server.didChangeConfiguration(gson.fromJson(gson.toJson(params.getSettings()), Settings.class).config);
     }
 
     /**

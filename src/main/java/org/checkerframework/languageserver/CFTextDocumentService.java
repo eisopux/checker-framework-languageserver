@@ -6,11 +6,32 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
+import java.util.logging.Logger;
+
 public class CFTextDocumentService implements TextDocumentService {
+
+    private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
+
     private final CFLanguageServer server;
+    private CheckExecutor executor;
 
     CFTextDocumentService(CFLanguageServer server) {
         this.server = server;
+    }
+
+
+    /**
+     * Accepts a new configuration from {@link CFLanguageServer}.
+     *
+     * @param config the new configuration, containing parameters for the underlying checker.
+     */
+    public void didChangeConfiguration(Settings.Config config) {
+        executor = new CheckExecutor(
+                config.getJdkPath(),
+                config.getCheckerPath(),
+                config.getCheckers(),
+                config.getCommandLintOptions()
+        );
     }
 
     /**
@@ -25,6 +46,7 @@ public class CFTextDocumentService implements TextDocumentService {
      */
     @Override
     public void didOpen(DidOpenTextDocumentParams params) {
+        logger.info(params.toString());
 
     }
 
@@ -38,7 +60,7 @@ public class CFTextDocumentService implements TextDocumentService {
      */
     @Override
     public void didChange(DidChangeTextDocumentParams params) {
-
+        logger.info("didChange called");
     }
 
     /**
@@ -53,7 +75,7 @@ public class CFTextDocumentService implements TextDocumentService {
      */
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
-
+        logger.info("didClose called");
     }
 
     /**
@@ -66,6 +88,6 @@ public class CFTextDocumentService implements TextDocumentService {
      */
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
-
+        logger.info("didSave called");
     }
 }
