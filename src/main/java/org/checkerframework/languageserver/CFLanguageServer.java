@@ -1,9 +1,6 @@
 package org.checkerframework.languageserver;
 
-import org.eclipse.lsp4j.InitializeParams;
-import org.eclipse.lsp4j.InitializeResult;
-import org.eclipse.lsp4j.ServerCapabilities;
-import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.*;
 
 import java.util.concurrent.CompletableFuture;
@@ -101,5 +98,10 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      */
     public void didChangeConfiguration(Settings.Config config) {
         textDocumentService.didChangeConfiguration(config);
+    }
+
+    public void publishDiagnostics(PublishDiagnosticsParams params) {
+        logger.info("PublishDiagnosticsParams: " + params.toString());
+        client.publishDiagnostics(params);
     }
 }

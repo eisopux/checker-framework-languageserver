@@ -1,12 +1,16 @@
 package org.checkerframework.languageserver;
 
-import org.eclipse.lsp4j.DidChangeTextDocumentParams;
-import org.eclipse.lsp4j.DidCloseTextDocumentParams;
-import org.eclipse.lsp4j.DidOpenTextDocumentParams;
-import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
+import javax.tools.JavaFileObject;
+import java.io.File;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class CFTextDocumentService implements TextDocumentService {
 
@@ -19,7 +23,6 @@ public class CFTextDocumentService implements TextDocumentService {
         this.server = server;
     }
 
-
     /**
      * Accepts a new configuration from {@link CFLanguageServer}.
      *
@@ -30,8 +33,37 @@ public class CFTextDocumentService implements TextDocumentService {
                 config.getJdkPath(),
                 config.getCheckerPath(),
                 config.getCheckers(),
-                config.getCommandLintOptions()
+                config.getCommandLineOptions()
         );
+    }
+
+    private Diagnostic convert(javax.tools.Diagnostic<? extends JavaFileObject> diagnostic) {
+        return new Diagnostic(
+                new Range(
+                        new Position(
+                                (int)diagnostic.getLineNumber(),
+                                (int)diagnostic.getColumnNumber()
+                        ),
+                        new Position(
+                                (int)diagnostic.getLineNumber(),
+                                (int)(diagnostic.getColumnNumber() + diagnostic.getEndPosition() - diagnostic.getStartPosition())
+                        )
+                ),
+                diagnostic.getMessage(null),
+                DiagnosticSeverity.Error,
+                "checker-framework",
+                diagnostic.getCode()
+        );
+    }
+
+    private void checkAndPublish(List<File> files) {
+        Map<JavaFileObject, List<javax.tools.Diagnostic<? extends JavaFileObject>>> result = executor.compile(files);
+        for (Map.Entry<JavaFileObject, List<javax.tools.Diagnostic<? extends JavaFileObject>>> entry: result.entrySet()) {
+            server.publishDiagnostics(new PublishDiagnosticsParams(
+                    entry.getKey().toUri().toString(),
+                    entry.getValue().stream().map(this::convert).collect(Collectors.toList())
+            ));
+        }
     }
 
     /**
@@ -47,7 +79,7 @@ public class CFTextDocumentService implements TextDocumentService {
     @Override
     public void didOpen(DidOpenTextDocumentParams params) {
         logger.info(params.toString());
-
+        checkAndPublish(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 
     /**

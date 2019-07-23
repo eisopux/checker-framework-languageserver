@@ -12,12 +12,12 @@ public class Settings {
     public static class Config {
         private final String frameworkPath;
         private final List<String> checkers;
-        private final List<String> commandLintOptions;
+        private final List<String> commandLineOptions;
 
         Config(String frameworkPath, List<String> checkers, List<String> commandLineOptions) {
             this.frameworkPath = frameworkPath;
             this.checkers = checkers;
-            this.commandLintOptions = commandLineOptions;
+            this.commandLineOptions = commandLineOptions;
         }
 
         String getJdkPath() {
@@ -32,8 +32,8 @@ public class Settings {
             return checkers;
         }
 
-        List<String> getCommandLintOptions() {
-            return commandLintOptions;
+        List<String> getCommandLineOptions() {
+            return commandLineOptions;
         }
     }
 }
