@@ -41,12 +41,12 @@ public class CFTextDocumentService implements TextDocumentService {
         return new Diagnostic(
                 new Range(
                         new Position(
-                                (int)diagnostic.getLineNumber(),
-                                (int)diagnostic.getColumnNumber()
+                                (int)diagnostic.getLineNumber() - 1,
+                                (int)diagnostic.getColumnNumber() - 1
                         ),
                         new Position(
-                                (int)diagnostic.getLineNumber(),
-                                (int)(diagnostic.getColumnNumber() + diagnostic.getEndPosition() - diagnostic.getStartPosition())
+                                (int)diagnostic.getLineNumber() - 1,
+                                (int)(diagnostic.getColumnNumber() + diagnostic.getEndPosition() - diagnostic.getStartPosition() - 1)
                         )
                 ),
                 diagnostic.getMessage(null),
