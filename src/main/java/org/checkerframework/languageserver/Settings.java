@@ -9,6 +9,9 @@ public class Settings {
     @SerializedName(CFLanguageServer.SERVER_NAME)
     Config config;
 
+    /**
+     * This class is used for converting from/to JSON as all settings will be under {@link CFLanguageServer.SERVER_NAME}.
+     */
     private static class Config {
         final String frameworkPath;
         final List<String> checkers;
@@ -19,7 +22,6 @@ public class Settings {
             this.checkers = checkers;
             this.commandLineOptions = commandLineOptions;
         }
-
     }
 
     String getJdkPath() {
