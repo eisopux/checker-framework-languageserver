@@ -6,16 +6,17 @@ import org.eclipse.lsp4j.services.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
+/**
+ * The actual language server, responsible for communicating with the client (editor).
+ */
 public class CFLanguageServer implements LanguageServer, LanguageClientAware {
 
     private static final Logger logger = Logger.getLogger(CFLanguageServer.class.getName());
 
-    // TODO: maybe use CompletableFuture
     private LanguageClient client;
 
     private final CFTextDocumentService textDocumentService;
     private final CFWorkspaceService workspaceService;
-    private String workspaceRoot;
 
     public CFLanguageServer() {
         this.client = null;
@@ -42,12 +43,10 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      * During the initialize request the server is allowed to sent the notifications window/showMessage,
      * window/logMessage and telemetry/event as well as the window/showMessageRequest request to the client.
      *
-     * @param params
+     * @param params see its <a href="https://microsoft.github.io/language-server-protocol/specification#initialize">specification</a>
      */
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-        this.workspaceRoot = params.getRootUri();
-
         ServerCapabilities capabilities = new ServerCapabilities();
         capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
         return CompletableFuture.completedFuture(new InitializeResult(capabilities));
@@ -61,7 +60,6 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      */
     @Override
     public CompletableFuture<Object> shutdown() {
-        // TODO: copied from example and couldn't find documentation
         return CompletableFuture.completedFuture(null);
     }
 
@@ -71,7 +69,8 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     @Override
     public void exit() {
         // no operation
-        // TODO: exit process
+        logger.info("Terminating");
+        System.exit(0);
     }
 
     /**
@@ -91,17 +90,22 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     }
 
     /**
-     * Accepts a new configuration set by the user (from {@link CFWorkspaceService}).
+     * Accepts a new configuration set by the user (called from {@link CFWorkspaceService}).
      * The new configuration is then passed to {@link CFTextDocumentService}.
      *
      * @param config the new configuration
      */
-    public void didChangeConfiguration(Settings.Config config) {
+    void didChangeConfiguration(Settings.Config config) {
         textDocumentService.didChangeConfiguration(config);
     }
 
-    public void publishDiagnostics(PublishDiagnosticsParams params) {
-        logger.info("PublishDiagnosticsParams: " + params.toString());
+    /**
+     * Publish diagnostics from {@link CFTextDocumentService} to the client.
+     *
+     * @param params the diagnostics
+     */
+    void publishDiagnostics(PublishDiagnosticsParams params) {
+        logger.info(params.toString());
         client.publishDiagnostics(params);
     }
 }
