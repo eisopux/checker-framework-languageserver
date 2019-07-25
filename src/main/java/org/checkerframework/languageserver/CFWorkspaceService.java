@@ -23,7 +23,7 @@ public class CFWorkspaceService implements WorkspaceService {
      * A notification sent from the client to the server to signal the change of
      * configuration settings.
      *
-     * @param params
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#workspace_didChangeConfiguration">specification</a>
      */
     @Override
     public void didChangeConfiguration(DidChangeConfigurationParams params) {
@@ -35,7 +35,7 @@ public class CFWorkspaceService implements WorkspaceService {
      * The watched files notification is sent from the client to the server when
      * the client detects changes to file watched by the language client.
      *
-     * @param params
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#workspace_didChangeWatchedFiles>specification</a>
      */
     @Override
     public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {

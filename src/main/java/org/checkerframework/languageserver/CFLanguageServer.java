@@ -43,7 +43,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      * During the initialize request the server is allowed to sent the notifications window/showMessage,
      * window/logMessage and telemetry/event as well as the window/showMessageRequest request to the client.
      *
-     * @param params see its <a href="https://microsoft.github.io/language-server-protocol/specification#initialize">specification</a>
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#initialize">specification</a>
      */
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
