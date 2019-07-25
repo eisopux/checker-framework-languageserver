@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * This class does all the dirty works on source files.
+ */
 public class CFTextDocumentService implements TextDocumentService {
 
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
@@ -26,14 +29,14 @@ public class CFTextDocumentService implements TextDocumentService {
     /**
      * Accepts a new configuration from {@link CFLanguageServer}.
      *
-     * @param config the new configuration, containing parameters for the underlying checker.
+     * @param settings the new configuration, containing parameters for the underlying checker.
      */
-    void didChangeConfiguration(Settings.Config config) {
+    void didChangeConfiguration(Settings settings) {
         executor = new CheckExecutor(
-                config.getJdkPath(),
-                config.getCheckerPath(),
-                config.getCheckers(),
-                config.getCommandLineOptions()
+                settings.getJdkPath(),
+                settings.getCheckerPath(),
+                settings.getCheckers(),
+                settings.getCommandLineOptions()
         );
     }
 

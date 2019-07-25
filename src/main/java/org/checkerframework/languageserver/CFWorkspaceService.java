@@ -28,7 +28,7 @@ public class CFWorkspaceService implements WorkspaceService {
     @Override
     public void didChangeConfiguration(DidChangeConfigurationParams params) {
         logger.info(String.format("Updated configuration: %s", params.toString()));
-        server.didChangeConfiguration(gson.fromJson(gson.toJson(params.getSettings()), Settings.class).config);
+        server.didChangeConfiguration(gson.fromJson(gson.toJson(params.getSettings()), Settings.class));
     }
 
     /**

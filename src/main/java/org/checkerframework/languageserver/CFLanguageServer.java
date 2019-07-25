@@ -95,8 +95,8 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      *
      * @param config the new configuration
      */
-    void didChangeConfiguration(Settings.Config config) {
-        textDocumentService.didChangeConfiguration(config);
+    void didChangeConfiguration(Settings settings) {
+        textDocumentService.didChangeConfiguration(settings);
     }
 
     /**
