@@ -1,1 +1,1 @@
-# checker-framework-lsp
+# Checker Framework Language Server
