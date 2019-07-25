@@ -2,6 +2,8 @@
 
 This is the language server for [Checker Framework](https://github.com/typetools/checker-framework) implemented with [LSP4J](https://github.com/eclipse/lsp4j), which means it can be used for all editors/IDEs that support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
 
+[Javadoc](https://zhangjiangqige.github.io/checker-framework-languageserver/).
+
 ## How to Build
 
 ```shell
