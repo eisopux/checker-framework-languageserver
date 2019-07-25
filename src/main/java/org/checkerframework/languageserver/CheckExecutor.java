@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * Used to run the checkerframework and collect results.
+ * Used to run the checker framework and collect results.
  */
 class CheckExecutor {
 
@@ -42,6 +42,12 @@ class CheckExecutor {
         options.addAll(commandLineOptions);
     }
 
+    /**
+     * Run type check against source files.
+     *
+     * @param files the files to be checked
+     * @return raw diagnostics grouped by JavaFileObject
+     */
     Map<JavaFileObject, List<Diagnostic<? extends JavaFileObject>>> compile(List<File> files) {
         if (files.isEmpty())
             return Collections.emptyMap();
