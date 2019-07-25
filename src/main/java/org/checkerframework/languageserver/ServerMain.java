@@ -17,8 +17,8 @@ public class ServerMain {
     /**
      * The entry point of application. Sets up and launches {@link CFLanguageServer}.
      *
-     * @see <a href="https://github.com/eclipse/lsp4j/blob/7fd8daebc61c1e8c83a0a3f016563e1896582db2/documentation/README.md#launch-and-connect-with-a-languageclient">Launch a language server</a>
      * @param args the input arguments
+     * @see <a href="https://github.com/eclipse/lsp4j/blob/7fd8daebc61c1e8c83a0a3f016563e1896582db2/documentation/README.md#launch-and-connect-with-a-languageclient">Launch a language server</a>
      */
     public static void main(String[] args) {
         try {
