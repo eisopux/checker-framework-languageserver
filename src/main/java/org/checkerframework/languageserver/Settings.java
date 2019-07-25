@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Settings {
-    @SerializedName("checker-framework")
+    @SerializedName(CFLanguageServer.SERVER_NAME)
     Config config;
 
     private static class Config {

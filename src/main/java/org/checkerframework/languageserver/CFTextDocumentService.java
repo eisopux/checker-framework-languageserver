@@ -58,6 +58,21 @@ public class CFTextDocumentService implements TextDocumentService {
      * Convert raw diagnostics from the compiler to the LSP counterpart.
      */
     private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic<? extends JavaFileObject> diagnostic) {
+        DiagnosticSeverity severity;
+        switch (diagnostic.getKind()) {
+            case ERROR:
+                severity = DiagnosticSeverity.Error;
+                break;
+            case WARNING:
+            case MANDATORY_WARNING:
+                severity = DiagnosticSeverity.Warning;
+                break;
+            case NOTE:
+            case OTHER:
+            default:
+                severity = DiagnosticSeverity.Information;
+        }
+
         return new Diagnostic(
                 new Range(
                         new Position(
@@ -70,8 +85,8 @@ public class CFTextDocumentService implements TextDocumentService {
                         )
                 ),
                 diagnostic.getMessage(null),
-                DiagnosticSeverity.Error,
-                "checker-framework",
+                severity,
+                CFLanguageServer.SERVER_NAME,
                 diagnostic.getCode()
         );
     }
