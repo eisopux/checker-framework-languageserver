@@ -28,13 +28,23 @@ public class CFTextDocumentService implements TextDocumentService {
      *
      * @param config the new configuration, containing parameters for the underlying checker.
      */
-    public void didChangeConfiguration(Settings.Config config) {
+    void didChangeConfiguration(Settings.Config config) {
         executor = new CheckExecutor(
                 config.getJdkPath(),
                 config.getCheckerPath(),
                 config.getCheckers(),
                 config.getCommandLineOptions()
         );
+    }
+
+    private void clearDiagnostics(List<File> files) {
+        // diagnostics need to be explicitly cleared by this server
+        // see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics">specification</a>
+        files.forEach(
+                file -> server.publishDiagnostics(
+                        new PublishDiagnosticsParams(
+                                file.toURI().toString(),
+                                Collections.emptyList())));
     }
 
     private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic<? extends JavaFileObject> diagnostic) {
@@ -92,7 +102,7 @@ public class CFTextDocumentService implements TextDocumentService {
      */
     @Override
     public void didChange(DidChangeTextDocumentParams params) {
-        logger.info("didChange called");
+        // change but not saved; ignore since we can only check the actual file
     }
 
     /**
@@ -107,7 +117,8 @@ public class CFTextDocumentService implements TextDocumentService {
      */
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
-        logger.info("didClose called");
+        logger.info(params.toString());
+        clearDiagnostics(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 
     /**
@@ -120,6 +131,8 @@ public class CFTextDocumentService implements TextDocumentService {
      */
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
-        logger.info("didSave called");
+        logger.info(params.toString());
+        clearDiagnostics(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        checkAndPublish(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 }
