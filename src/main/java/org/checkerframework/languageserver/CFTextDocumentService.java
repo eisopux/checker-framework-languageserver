@@ -37,7 +37,7 @@ public class CFTextDocumentService implements TextDocumentService {
         );
     }
 
-    private Diagnostic convert(javax.tools.Diagnostic<? extends JavaFileObject> diagnostic) {
+    private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic<? extends JavaFileObject> diagnostic) {
         return new Diagnostic(
                 new Range(
                         new Position(
@@ -61,7 +61,7 @@ public class CFTextDocumentService implements TextDocumentService {
         for (Map.Entry<JavaFileObject, List<javax.tools.Diagnostic<? extends JavaFileObject>>> entry: result.entrySet()) {
             server.publishDiagnostics(new PublishDiagnosticsParams(
                     entry.getKey().toUri().toString(),
-                    entry.getValue().stream().map(this::convert).collect(Collectors.toList())
+                    entry.getValue().stream().map(this::convertToLSPDiagnostic).collect(Collectors.toList())
             ));
         }
     }
