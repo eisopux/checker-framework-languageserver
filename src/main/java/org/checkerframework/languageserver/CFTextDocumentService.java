@@ -154,7 +154,7 @@ public class CFTextDocumentService implements TextDocumentService {
      * <p>
      * Registration Options: TextDocumentSaveRegistrationOptions
      *
-     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave">specification</a>>
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave">specification</a>
      */
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
