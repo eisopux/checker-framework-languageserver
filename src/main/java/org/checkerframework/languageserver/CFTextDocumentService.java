@@ -40,9 +40,13 @@ public class CFTextDocumentService implements TextDocumentService {
         );
     }
 
+    /**
+     * Clear diagnostics of files. This needs to be done explicitly by the server.
+     *
+     * @param files files whose diagnostics are to be cleared
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics">specification</a>
+     */
     private void clearDiagnostics(List<File> files) {
-        // diagnostics need to be explicitly cleared by this server
-        // see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics">specification</a>
         files.forEach(
                 file -> server.publishDiagnostics(
                         new PublishDiagnosticsParams(
@@ -50,6 +54,9 @@ public class CFTextDocumentService implements TextDocumentService {
                                 Collections.emptyList())));
     }
 
+    /**
+     * Convert raw diagnostics from the compiler to the LSP counterpart.
+     */
     private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic<? extends JavaFileObject> diagnostic) {
         return new Diagnostic(
                 new Range(
@@ -69,6 +76,10 @@ public class CFTextDocumentService implements TextDocumentService {
         );
     }
 
+    /**
+     * Run type check and publish results.
+     * @param files source files to be checked
+     */
     private void checkAndPublish(List<File> files) {
         Map<JavaFileObject, List<javax.tools.Diagnostic<? extends JavaFileObject>>> result = executor.compile(files);
         for (Map.Entry<JavaFileObject, List<javax.tools.Diagnostic<? extends JavaFileObject>>> entry: result.entrySet()) {
@@ -87,7 +98,7 @@ public class CFTextDocumentService implements TextDocumentService {
      * <p>
      * Registration Options: TextDocumentRegistrationOptions
      *
-     * @param params
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen">specifiation</a>
      */
     @Override
     public void didOpen(DidOpenTextDocumentParams params) {
@@ -100,8 +111,6 @@ public class CFTextDocumentService implements TextDocumentService {
      * signal changes to a text document.
      * <p>
      * Registration Options: TextDocumentChangeRegistrationOptions
-     *
-     * @param params
      */
     @Override
     public void didChange(DidChangeTextDocumentParams params) {
@@ -116,7 +125,7 @@ public class CFTextDocumentService implements TextDocumentService {
      * <p>
      * Registration Options: TextDocumentRegistrationOptions
      *
-     * @param params
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didClose">specification</a>
      */
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
@@ -130,7 +139,7 @@ public class CFTextDocumentService implements TextDocumentService {
      * <p>
      * Registration Options: TextDocumentSaveRegistrationOptions
      *
-     * @param params
+     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave">specification</a>>
      */
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
