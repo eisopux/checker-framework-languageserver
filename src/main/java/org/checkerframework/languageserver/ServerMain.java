@@ -22,6 +22,7 @@ public class ServerMain {
      */
     public static void main(String[] args) {
         try {
+            logger.info("Launching checker framework languageserver");
             CFLanguageServer server = new CFLanguageServer();
             Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, System.in, System.out);
             LanguageClient client = launcher.getRemoteProxy();
