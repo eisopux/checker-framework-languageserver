@@ -57,7 +57,7 @@ public class CFTextDocumentService implements TextDocumentService {
     /**
      * Convert raw diagnostics from the compiler to the LSP counterpart.
      */
-    private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic<? extends JavaFileObject> diagnostic) {
+    private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic diagnostic) {
         DiagnosticSeverity severity;
         switch (diagnostic.getKind()) {
             case ERROR:
@@ -96,10 +96,10 @@ public class CFTextDocumentService implements TextDocumentService {
      * @param files source files to be checked
      */
     private void checkAndPublish(List<File> files) {
-        Map<JavaFileObject, List<javax.tools.Diagnostic<? extends JavaFileObject>>> result = executor.compile(files);
-        for (Map.Entry<JavaFileObject, List<javax.tools.Diagnostic<? extends JavaFileObject>>> entry: result.entrySet()) {
+        Map<String, List<javax.tools.Diagnostic>> result = executor.compile(files);
+        for (Map.Entry<String, List<javax.tools.Diagnostic>> entry: result.entrySet()) {
             server.publishDiagnostics(new PublishDiagnosticsParams(
-                    entry.getKey().toUri().toString(),
+                    entry.getKey(),
                     entry.getValue().stream().map(this::convertToLSPDiagnostic).collect(Collectors.toList())
             ));
         }

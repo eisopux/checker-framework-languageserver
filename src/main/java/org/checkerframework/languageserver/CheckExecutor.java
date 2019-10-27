@@ -1,15 +1,12 @@
 package org.checkerframework.languageserver;
 
 import javax.tools.*;
-import java.io.File;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+import org.checkerframework.framework.util.CheckerMain;
 
 /**
  * Used to run the checker framework and collect results.
@@ -19,27 +16,43 @@ class CheckExecutor {
     private static final Logger logger = Logger.getLogger(CheckExecutor.class.getName());
 
     private final List<String> options;
-    private final JavaCompiler compiler;
-    private StandardJavaFileManager fileManager;
+    private final Gson gson;
 
     CheckExecutor(String jdkPath, String checkerPath, List<String> checkers, List<String> commandLineOptions) {
-        compiler = ToolProvider.getSystemJavaCompiler();
-        fileManager = compiler.getStandardFileManager(null, null, null);
-
+        List<String> opts = new ArrayList<>();
         // adapted from checker-framework/framework-test/src/main/java/org/checkerframework/framework/test/TypecheckExecutor.java
-        options = new ArrayList<>();
         // Even though the method compiler.getTask takes a list of processors, it fails if
         // processors are passed this way with the message:
         // error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only
         // accepted if annotation processing is explicitly requested
         // Therefore, we now add them to the beginning of the options list.
-        options.add("-processor");
-        options.add(String.join(",", checkers));
-        options.add("-Xbootclasspath/p:" + jdkPath);
-        options.add("-processorpath");
-        options.add(checkerPath);
-        options.add("-proc:only");
-        options.addAll(commandLineOptions);
+        opts.add("-processor");
+        opts.add(String.join(",", checkers));
+        opts.add("-Xbootclasspath/p:" + jdkPath);
+        opts.add("-processorpath");
+        opts.add(checkerPath);
+        opts.add("-proc:only");
+        opts.addAll(commandLineOptions);
+
+        CheckerMain cm = new CheckerMain(new File(checkerPath), opts);
+        options = new ArrayList<>();
+        boolean sawClasspath = false;
+        Iterator<String> it = cm.getExecArguments().iterator();
+        while (it.hasNext()) {
+            String o = it.next();
+            if (o.equals("com.sun.tools.javac.Main")) {
+                options.add(JavacWrapper.class.getCanonicalName());
+            } else if (!sawClasspath && (o.equals("-cp") || o.equals("-classpath"))) {
+                sawClasspath = true;
+                options.add(o);
+                o = it.next();
+                options.add(o + ":" + JavacWrapper.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+            } else {
+                options.add(o);
+            }
+        }
+
+        gson = new Gson();
     }
 
     /**
@@ -48,22 +61,41 @@ class CheckExecutor {
      * @param files the files to be checked
      * @return raw diagnostics grouped by JavaFileObject
      */
-    Map<JavaFileObject, List<Diagnostic<? extends JavaFileObject>>> compile(List<File> files) {
+    Map<String, List<Diagnostic>> compile(List<File> files) {
         if (files.isEmpty())
             return Collections.emptyMap();
 
-        files.forEach(f -> logger.info("checking: " + f.getPath()));
+        files.forEach(f -> logger.info("checking: " + f));
 
-        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-        Iterable<? extends JavaFileObject> javaFiles = fileManager.getJavaFileObjectsFromFiles(files);
+        List<String> opts = new ArrayList<>(options);
+        Map<String, List<Diagnostic>> ret = null;
 
-        compiler
-                .getTask(new StringWriter(), fileManager, diagnostics, options, new ArrayList<String>(), javaFiles)
-                .call();
+        try {
+            for (File f: files) {
+                opts.add(f.getCanonicalPath());
+            }
+            StringBuilder sb = new StringBuilder();
+            for (String s: opts) {
+                sb.append(s).append(" ");
+            }
+            logger.info(this.getClass().getName() + " javac options: " + sb.toString());
 
-        return diagnostics
-                .getDiagnostics()
-                .stream()
-                .collect(Collectors.groupingBy(Diagnostic::getSource));
+            Process proc = Runtime.getRuntime().exec(opts.toArray(new String[0]));
+            proc.waitFor();
+            DiagnosticList diags = gson.fromJson(new InputStreamReader(proc.getInputStream()), DiagnosticList.class);
+
+            ret = new HashMap<>();
+            for (CFDiagnostic d: diags.diags) {
+                String s = (String)d.getSource();
+                if (!ret.containsKey(s)) {
+                    ret.put(s, new ArrayList<>());
+                }
+                ret.get(s).add(d);
+            }
+        } catch (Exception e) {
+            logger.info(e.toString());
+        }
+
+        return ret;
     }
 }
