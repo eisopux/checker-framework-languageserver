@@ -46,7 +46,7 @@ class CheckExecutor {
                 sawClasspath = true;
                 options.add(o);
                 o = it.next();
-                options.add(o + ":" + JavacWrapper.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+                options.add(o + File.pathSeparator + JavacWrapper.class.getProtectionDomain().getCodeSource().getLocation().getPath());
             } else {
                 options.add(o);
             }
