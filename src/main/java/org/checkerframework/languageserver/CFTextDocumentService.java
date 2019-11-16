@@ -3,8 +3,8 @@ package org.checkerframework.languageserver;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
-import javax.tools.JavaFileObject;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * This class does all the dirty works on source files.
  */
-public class CFTextDocumentService implements TextDocumentService {
+public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
 
@@ -31,8 +31,9 @@ public class CFTextDocumentService implements TextDocumentService {
      *
      * @param settings the new configuration, containing parameters for the underlying checker.
      */
-    void didChangeConfiguration(Settings settings) {
+    void didChangeConfiguration(Settings settings) throws IOException {
         executor = new CheckExecutor(
+                this,
                 settings.getJdkPath(),
                 settings.getCheckerPath(),
                 settings.getCheckers(),
@@ -96,13 +97,7 @@ public class CFTextDocumentService implements TextDocumentService {
      * @param files source files to be checked
      */
     private void checkAndPublish(List<File> files) {
-        Map<String, List<javax.tools.Diagnostic>> result = executor.compile(files);
-        for (Map.Entry<String, List<javax.tools.Diagnostic>> entry: result.entrySet()) {
-            server.publishDiagnostics(new PublishDiagnosticsParams(
-                    entry.getKey(),
-                    entry.getValue().stream().map(this::convertToLSPDiagnostic).collect(Collectors.toList())
-            ));
-        }
+        executor.compile(files);
     }
 
     /**
@@ -161,5 +156,15 @@ public class CFTextDocumentService implements TextDocumentService {
         logger.info(params.toString());
         clearDiagnostics(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
         checkAndPublish(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+    }
+
+    @Override
+    public void publish(Map<String, List<javax.tools.Diagnostic>> result) {
+        for (Map.Entry<String, List<javax.tools.Diagnostic>> entry: result.entrySet()) {
+            server.publishDiagnostics(new PublishDiagnosticsParams(
+                    entry.getKey(),
+                    entry.getValue().stream().map(this::convertToLSPDiagnostic).collect(Collectors.toList())
+            ));
+        }
     }
 }

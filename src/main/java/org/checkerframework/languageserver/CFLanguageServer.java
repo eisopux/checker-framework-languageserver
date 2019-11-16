@@ -3,6 +3,7 @@ package org.checkerframework.languageserver;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.*;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
@@ -99,7 +100,11 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      * @param config the new configuration
      */
     void didChangeConfiguration(Settings settings) {
-        textDocumentService.didChangeConfiguration(settings);
+        try {
+            textDocumentService.didChangeConfiguration(settings);
+        } catch (IOException e) {
+            logger.severe("Failed to change configuration: " + e.toString());
+        }
     }
 
     /**

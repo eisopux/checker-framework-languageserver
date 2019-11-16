@@ -15,10 +15,13 @@ class CheckExecutor {
 
     private static final Logger logger = Logger.getLogger(CheckExecutor.class.getName());
 
+    private final Publisher publisher;
     private final List<String> options;
     private final Gson gson;
+    private final Process wrapper;
 
-    CheckExecutor(String jdkPath, String checkerPath, List<String> checkers, List<String> commandLineOptions) {
+    CheckExecutor(Publisher publisher, String jdkPath, String checkerPath, List<String> checkers, List<String> commandLineOptions) throws IOException {
+        this.publisher = publisher;
         List<String> opts = new ArrayList<>();
         // adapted from checker-framework/framework-test/src/main/java/org/checkerframework/framework/test/TypecheckExecutor.java
         // Even though the method compiler.getTask takes a list of processors, it fails if
@@ -53,49 +56,60 @@ class CheckExecutor {
         }
 
         gson = new Gson();
+        wrapper = Runtime.getRuntime().exec(options.toArray(new String[0]));;
+        new Thread(new Receiver()).start();
     }
 
     /**
      * Run type check against source files.
      *
      * @param files the files to be checked
-     * @return raw diagnostics grouped by JavaFileObject
      */
-    Map<String, List<Diagnostic>> compile(List<File> files) {
+    void compile(List<File> files) {
         if (files.isEmpty())
-            return Collections.emptyMap();
+            return;
 
         files.forEach(f -> logger.info("checking: " + f));
 
-        List<String> opts = new ArrayList<>(options);
-        Map<String, List<Diagnostic>> ret = null;
-
+        StringBuilder sb = new StringBuilder();
         try {
             for (File f: files) {
-                opts.add(f.getCanonicalPath());
+                sb.append(f.getCanonicalPath()).append("\n");
             }
-            StringBuilder sb = new StringBuilder();
-            for (String s: opts) {
-                sb.append(s).append(" ");
-            }
-            logger.info(this.getClass().getName() + " javac options: " + sb.toString());
-
-            Process proc = Runtime.getRuntime().exec(opts.toArray(new String[0]));
-            proc.waitFor();
-            DiagnosticList diags = gson.fromJson(new InputStreamReader(proc.getInputStream()), DiagnosticList.class);
-
-            ret = new HashMap<>();
-            for (CFDiagnostic d: diags.diags) {
-                String s = (String)d.getSource();
-                if (!ret.containsKey(s)) {
-                    ret.put(s, new ArrayList<>());
-                }
-                ret.get(s).add(d);
-            }
-        } catch (Exception e) {
-            logger.info(e.toString());
+            OutputStreamWriter osw = new OutputStreamWriter(wrapper.getOutputStream());
+            osw.write(sb.toString());
+            osw.flush();
+        } catch (IOException e) {
+            logger.warning("Failed to check: " + e.toString());
         }
+    }
 
-        return ret;
+    // This class runs in the background in a thread and receives the output of JavacWrapper.
+    // Diagnostics received by it will then be sent to the editor.
+    private class Receiver implements Runnable {
+        @Override
+        public void run() {
+            InputStream stdout = wrapper.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
+            while (true) {
+                try {
+                    String diag = br.readLine();
+                    logger.info("Got from wrapper: " + diag);
+                    DiagnosticList diags = gson.fromJson(diag, DiagnosticList.class);
+                    Map<String, List<javax.tools.Diagnostic>> ret = new HashMap<>();
+                    for (CFDiagnostic d: diags.diags) {
+                        String s = (String)d.getSource();
+                        if (!ret.containsKey(s)) {
+                            ret.put(s, new ArrayList<>());
+                        }
+                        ret.get(s).add(d);
+                    }
+
+                    publisher.publish(ret);
+                } catch (IOException e) {
+                    logger.warning("Failed to read the output of wrapper: " + e.toString());
+                }
+            }
+        }
     }
 }
