@@ -4,7 +4,6 @@ import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -26,19 +25,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         this.server = server;
     }
 
-    /**
-     * Accepts a new configuration from {@link CFLanguageServer}.
-     *
-     * @param settings the new configuration, containing parameters for the underlying checker.
-     */
-    void didChangeConfiguration(Settings settings) throws IOException {
-        executor = new CheckExecutor(
-                this,
-                settings.getJdkPath(),
-                settings.getCheckerPath(),
-                settings.getCheckers(),
-                settings.getCommandLineOptions()
-        );
+    void setExecutor(CheckExecutor executor) {
+        this.executor = executor;
     }
 
     /**

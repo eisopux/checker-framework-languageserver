@@ -18,14 +18,31 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     public static final String SERVER_NAME = "checker-framework";
 
     private LanguageClient client;
+    private Settings settings;
+    private CheckExecutor executor;
 
     private final CFTextDocumentService textDocumentService;
     private final CFWorkspaceService workspaceService;
 
-    public CFLanguageServer() {
-        this.client = null;
+    CFLanguageServer(Settings settings) throws IOException {
+        this.settings = settings;
         this.textDocumentService = new CFTextDocumentService(this);
+        this.executor = buildExecutor(settings);
+        this.textDocumentService.setExecutor(this.executor);
+        this.client = null;
         this.workspaceService = new CFWorkspaceService(this);
+    }
+
+    private CheckExecutor buildExecutor(Settings settings) throws IOException {
+        String checker = settings.getCheckerPath();
+        logger.info("Launching CheckExecutor using " + checker);
+        return new CheckExecutor(
+                this.textDocumentService,
+                settings.getJdkPath(),
+                settings.getCheckerPath(),
+                settings.getCheckers(),
+                settings.getCommandLineOptions()
+        );
     }
 
     @Override
@@ -101,7 +118,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      */
     void didChangeConfiguration(Settings settings) {
         try {
-            textDocumentService.didChangeConfiguration(settings);
+            textDocumentService.setExecutor(buildExecutor(settings));
         } catch (IOException e) {
             logger.severe("Failed to change configuration: " + e.toString());
         }

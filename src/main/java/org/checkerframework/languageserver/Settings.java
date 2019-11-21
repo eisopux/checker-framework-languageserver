@@ -5,14 +5,18 @@ import com.google.gson.annotations.SerializedName;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class Settings {
+class Settings {
     @SerializedName(CFLanguageServer.SERVER_NAME)
     Config config;
+
+    Settings(Config config) {
+        this.config = config;
+    }
 
     /**
      * This class is used for converting from/to JSON as all settings will be under {@link CFLanguageServer.SERVER_NAME}.
      */
-    private static class Config {
+    static class Config {
         final String frameworkPath;
         final List<String> checkers;
         final List<String> commandLineOptions;

@@ -13,7 +13,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application
     id 'application'
 
-    id "com.github.johnrengelman.shadow" version "5.1.0"
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
 
 repositories {
@@ -22,10 +22,11 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.checkerframework', name: 'checker', version: '2.11.1'
-    implementation "org.checkerframework:javacutil:2.11.1"
-    implementation "org.eclipse.lsp4j:org.eclipse.lsp4j:0.7.2"
+    implementation 'org.checkerframework:checker:2.11.1'
+    implementation 'org.checkerframework:javacutil:2.11.1'
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.7.2'
     implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'commons-cli:commons-cli:1.4'
     testImplementation 'junit:junit:4.12'
 }
 
