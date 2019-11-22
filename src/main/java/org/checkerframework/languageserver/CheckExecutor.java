@@ -36,6 +36,8 @@ class CheckExecutor {
         opts.add("-proc:only");
         opts.addAll(commandLineOptions);
 
+        logger.info("java.version is: " + System.getProperty("java.version"));
+
         CheckerMain cm = new CheckerMain(new File(checkerPath), opts);
         options = new ArrayList<>();
         boolean sawClasspath = false;
@@ -55,6 +57,7 @@ class CheckExecutor {
         }
 
         gson = new Gson();
+        logger.info(String.join(" ", options));
         wrapper = Runtime.getRuntime().exec(options.toArray(new String[0]));;
         new Thread(new Receiver()).start();
     }
