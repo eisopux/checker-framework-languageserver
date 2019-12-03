@@ -33,3 +33,9 @@ application {
     // Define the main class for the application
     mainClassName = 'org.checkerframework.languageserver.ServerMain'
 }
+
+shadowJar {
+    dependencies {
+        exclude(dependency('org.checkerframework:checker'))
+    }
+}
