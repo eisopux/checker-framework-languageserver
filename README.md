@@ -2,8 +2,6 @@
 
 This is the language server for [Checker Framework](https://github.com/typetools/checker-framework) implemented with [LSP4J](https://github.com/eclipse/lsp4j), which means it can be used for all editors/IDEs that support the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
 
-[Javadoc](https://zhangjiangqige.github.io/checker-framework-languageserver/).
-
 ## How to Build
 
 ```shell
@@ -41,7 +39,7 @@ This language server can be used directly with the help of [gtache/intellij-lsp]
 
 ## Notes for Development
 
-As LSP4J lacks documentation, it's suggested that the developer of this project use an IDE supporting auto-completion so the methods/interfaces/classes of LSP4J can be easily inspected to figure out what are actually given/expected.
+As LSP4J lacks documentation, it's suggested that the developer of this project uses an IDE supporting auto-completion so the methods/interfaces/classes of LSP4J can be easily inspected to figure out what are actually given/expected.
 
 To format the source code, run `$ ./gradlew goJF`.
 
