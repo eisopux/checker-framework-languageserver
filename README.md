@@ -43,6 +43,8 @@ This language server can be used directly with the help of [gtache/intellij-lsp]
 
 As LSP4J lacks documentation, it's suggested that the developer of this project use an IDE supporting auto-completion so the methods/interfaces/classes of LSP4J can be easily inspected to figure out what are actually given/expected.
 
+To format the source code, run `$ ./gradlew goJF`.
+
 ## Acknowledgement
 
 - [checkerframework-lsp](https://github.com/adamyy/checkerframework-lsp)
