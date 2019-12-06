@@ -1,8 +1,5 @@
 package org.checkerframework.languageserver;
 
-import org.eclipse.lsp4j.*;
-import org.eclipse.lsp4j.services.TextDocumentService;
-
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
@@ -10,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.services.TextDocumentService;
 
-/**
- * This class does all the dirty works on source files.
- */
+/** This class does all the dirty works on source files. */
 public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
@@ -33,19 +30,18 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      * Clear diagnostics of files. This needs to be done explicitly by the server.
      *
      * @param files files whose diagnostics are to be cleared
-     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics">specification</a>
+     * @see <a
+     *     href="https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics">specification</a>
      */
     private void clearDiagnostics(List<File> files) {
         files.forEach(
-                file -> server.publishDiagnostics(
-                        new PublishDiagnosticsParams(
-                                file.toURI().toString(),
-                                Collections.emptyList())));
+                file ->
+                        server.publishDiagnostics(
+                                new PublishDiagnosticsParams(
+                                        file.toURI().toString(), Collections.emptyList())));
     }
 
-    /**
-     * Convert raw diagnostics from the compiler to the LSP counterpart.
-     */
+    /** Convert raw diagnostics from the compiler to the LSP counterpart. */
     private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic diagnostic) {
         DiagnosticSeverity severity;
         switch (diagnostic.getKind()) {
@@ -65,23 +61,24 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         return new Diagnostic(
                 new Range(
                         new Position(
-                                (int)diagnostic.getLineNumber() - 1,
-                                (int)diagnostic.getColumnNumber() - 1
-                        ),
+                                (int) diagnostic.getLineNumber() - 1,
+                                (int) diagnostic.getColumnNumber() - 1),
                         new Position(
-                                (int)diagnostic.getLineNumber() - 1,
-                                (int)(diagnostic.getColumnNumber() + diagnostic.getEndPosition() - diagnostic.getStartPosition() - 1)
-                        )
-                ),
+                                (int) diagnostic.getLineNumber() - 1,
+                                (int)
+                                        (diagnostic.getColumnNumber()
+                                                + diagnostic.getEndPosition()
+                                                - diagnostic.getStartPosition()
+                                                - 1))),
                 diagnostic.getMessage(null),
                 severity,
                 CFLanguageServer.SERVER_NAME,
-                diagnostic.getCode()
-        );
+                diagnostic.getCode());
     }
 
     /**
      * Run type check and publish results.
+     *
      * @param files source files to be checked
      */
     private void checkAndPublish(List<File> files) {
@@ -89,26 +86,27 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     /**
-     * The document open notification is sent from the client to the server to
-     * signal newly opened text documents. The document's truth is now managed
-     * by the client and the server must not try to read the document's truth
-     * using the document's uri.
-     * <p>
-     * Registration Options: TextDocumentRegistrationOptions
+     * The document open notification is sent from the client to the server to signal newly opened
+     * text documents. The document's truth is now managed by the client and the server must not try
+     * to read the document's truth using the document's uri.
      *
-     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen">specifiation</a>
+     * <p>Registration Options: TextDocumentRegistrationOptions
+     *
+     * @see <a
+     *     href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen">specifiation</a>
      */
     @Override
     public void didOpen(DidOpenTextDocumentParams params) {
         logger.info(params.toString());
-        checkAndPublish(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        checkAndPublish(
+                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 
     /**
-     * The document change notification is sent from the client to the server to
-     * signal changes to a text document.
-     * <p>
-     * Registration Options: TextDocumentChangeRegistrationOptions
+     * The document change notification is sent from the client to the server to signal changes to a
+     * text document.
+     *
+     * <p>Registration Options: TextDocumentChangeRegistrationOptions
      */
     @Override
     public void didChange(DidChangeTextDocumentParams params) {
@@ -116,43 +114,50 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     /**
-     * The document close notification is sent from the client to the server
-     * when the document got closed in the client. The document's truth now
-     * exists where the document's uri points to (e.g. if the document's uri is
-     * a file uri the truth now exists on disk).
-     * <p>
-     * Registration Options: TextDocumentRegistrationOptions
+     * The document close notification is sent from the client to the server when the document got
+     * closed in the client. The document's truth now exists where the document's uri points to
+     * (e.g. if the document's uri is a file uri the truth now exists on disk).
      *
-     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didClose">specification</a>
+     * <p>Registration Options: TextDocumentRegistrationOptions
+     *
+     * @see <a
+     *     href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didClose">specification</a>
      */
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
         logger.info(params.toString());
-        clearDiagnostics(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        clearDiagnostics(
+                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 
     /**
-     * The document save notification is sent from the client to the server when
-     * the document for saved in the client.
-     * <p>
-     * Registration Options: TextDocumentSaveRegistrationOptions
+     * The document save notification is sent from the client to the server when the document for
+     * saved in the client.
      *
-     * @see <a href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave">specification</a>
+     * <p>Registration Options: TextDocumentSaveRegistrationOptions
+     *
+     * @see <a
+     *     href="https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave">specification</a>
      */
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
         logger.info(params.toString());
-        clearDiagnostics(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
-        checkAndPublish(Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        clearDiagnostics(
+                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        checkAndPublish(
+                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 
     @Override
     public void publish(Map<String, List<javax.tools.Diagnostic>> result) {
-        for (Map.Entry<String, List<javax.tools.Diagnostic>> entry: result.entrySet()) {
-            server.publishDiagnostics(new PublishDiagnosticsParams(
-                    entry.getKey(),
-                    entry.getValue().stream().map(this::convertToLSPDiagnostic).collect(Collectors.toList())
-            ));
+        for (Map.Entry<String, List<javax.tools.Diagnostic>> entry : result.entrySet()) {
+            server.publishDiagnostics(
+                    new PublishDiagnosticsParams(
+                            entry.getKey(),
+                            entry.getValue()
+                                    .stream()
+                                    .map(this::convertToLSPDiagnostic)
+                                    .collect(Collectors.toList())));
         }
     }
 }
