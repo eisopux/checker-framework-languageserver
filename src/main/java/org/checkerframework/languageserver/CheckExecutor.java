@@ -1,15 +1,12 @@
 package org.checkerframework.languageserver;
 
+import com.google.gson.Gson;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
-
-import com.google.gson.Gson;
 import org.checkerframework.framework.util.CheckerMain;
 
-/**
- * Used to run the checker framework and collect results.
- */
+/** Used to run the checker framework and collect results. */
 class CheckExecutor {
 
     private static final Logger logger = Logger.getLogger(CheckExecutor.class.getName());
@@ -19,10 +16,17 @@ class CheckExecutor {
     private final Gson gson;
     private final Process wrapper;
 
-    CheckExecutor(Publisher publisher, String jdkPath, String checkerPath, List<String> checkers, List<String> commandLineOptions) throws IOException {
+    CheckExecutor(
+            Publisher publisher,
+            String jdkPath,
+            String checkerPath,
+            List<String> checkers,
+            List<String> commandLineOptions)
+            throws IOException {
         this.publisher = publisher;
         List<String> opts = new ArrayList<>();
-        // adapted from checker-framework/framework-test/src/main/java/org/checkerframework/framework/test/TypecheckExecutor.java
+        // adapted from
+        // checker-framework/framework-test/src/main/java/org/checkerframework/framework/test/TypecheckExecutor.java
         // Even though the method compiler.getTask takes a list of processors, it fails if
         // processors are passed this way with the message:
         // error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only
@@ -50,7 +54,14 @@ class CheckExecutor {
                 sawClasspath = true;
                 options.add(o);
                 o = it.next();
-                options.add(o + File.pathSeparator + JavacWrapper.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+                options.add(
+                        o
+                                + File.pathSeparator
+                                + JavacWrapper.class
+                                        .getProtectionDomain()
+                                        .getCodeSource()
+                                        .getLocation()
+                                        .getPath());
             } else {
                 options.add(o);
             }
@@ -58,7 +69,8 @@ class CheckExecutor {
 
         gson = new Gson();
         logger.info(String.join(" ", options));
-        wrapper = Runtime.getRuntime().exec(options.toArray(new String[0]));;
+        wrapper = Runtime.getRuntime().exec(options.toArray(new String[0]));
+        ;
         new Thread(new Receiver()).start();
     }
 
@@ -68,14 +80,13 @@ class CheckExecutor {
      * @param files the files to be checked
      */
     void compile(List<File> files) {
-        if (files.isEmpty())
-            return;
+        if (files.isEmpty()) return;
 
         files.forEach(f -> logger.info("checking: " + f));
 
         StringBuilder sb = new StringBuilder();
         try {
-            for (File f: files) {
+            for (File f : files) {
                 sb.append(f.getCanonicalPath()).append("\n");
             }
             OutputStreamWriter osw = new OutputStreamWriter(wrapper.getOutputStream());
@@ -99,8 +110,8 @@ class CheckExecutor {
                     logger.info("Got from wrapper: " + diag);
                     DiagnosticList diags = gson.fromJson(diag, DiagnosticList.class);
                     Map<String, List<javax.tools.Diagnostic>> ret = new HashMap<>();
-                    for (CFDiagnostic d: diags.diags) {
-                        String s = (String)d.getSource();
+                    for (CFDiagnostic d : diags.diags) {
+                        String s = (String) d.getSource();
                         if (!ret.containsKey(s)) {
                             ret.put(s, new ArrayList<>());
                         }

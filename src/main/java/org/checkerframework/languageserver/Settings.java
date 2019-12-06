@@ -1,7 +1,6 @@
 package org.checkerframework.languageserver;
 
 import com.google.gson.annotations.SerializedName;
-
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -14,7 +13,8 @@ class Settings {
     }
 
     /**
-     * This class is used for converting from/to JSON as all settings will be under {@link CFLanguageServer.SERVER_NAME}.
+     * This class is used for converting from/to JSON as all settings will be under {@link
+     * CFLanguageServer.SERVER_NAME}.
      */
     static class Config {
         final String frameworkPath;
@@ -44,4 +44,3 @@ class Settings {
         return config.commandLineOptions;
     }
 }
-

@@ -1,14 +1,13 @@
 package org.checkerframework.languageserver;
 
 import com.google.gson.Gson;
-
-import javax.tools.*;
 import java.util.*;
+import javax.tools.*;
 
 /**
- * This class wraps around javac (com.sun.tools.javac) in order to output diagnostics.
- * It passes parameters transparently to javac, and so for other classes it behaves exactly the same as javac and can
- * substitute com.sun.tools.javac.Main.
+ * This class wraps around javac (com.sun.tools.javac) in order to output diagnostics. It passes
+ * parameters transparently to javac, and so for other classes it behaves exactly the same as javac
+ * and can substitute com.sun.tools.javac.Main.
  */
 public class JavacWrapper {
 
@@ -34,10 +33,9 @@ public class JavacWrapper {
 
     void compile(String f) {
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-        Iterable<? extends JavaFileObject> javaFiles = fileManager.getJavaFileObjectsFromStrings(Collections.singletonList(f));
-        javac
-                .getTask(null, null, diagnostics, options, null, javaFiles)
-                .call();
+        Iterable<? extends JavaFileObject> javaFiles =
+                fileManager.getJavaFileObjectsFromStrings(Collections.singletonList(f));
+        javac.getTask(null, null, diagnostics, options, null, javaFiles).call();
 
         DiagnosticList diags = new DiagnosticList(diagnostics.getDiagnostics());
         System.out.println(new Gson().toJson(diags, DiagnosticList.class));
