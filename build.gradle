@@ -43,5 +43,5 @@ shadowJar {
 }
 
 googleJavaFormat {
-  options style: 'AOSP'
+    options style: 'AOSP'
 }
