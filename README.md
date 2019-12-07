@@ -43,6 +43,10 @@ As LSP4J lacks documentation, it's suggested that the developer of this project 
 
 To format the source code, run `$ ./gradlew goJF`.
 
+## Dependency on Checker Framework
+
+This project has a dependency on Checker Framework, but it's only `org.checkerframework.framework.util.CheckerMain`, which is used by `CheckExecutor` to generate the arguments for launching Checker Framework properly. Therefore it's not necessary to update this dependency very often; it only needs to be updated if in a future version the interface of `CheckerMain` changes.
+
 ## Acknowledgement
 
 - [checkerframework-lsp](https://github.com/adamyy/checkerframework-lsp)
