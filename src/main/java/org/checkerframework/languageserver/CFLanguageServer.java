@@ -24,13 +24,13 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     CFLanguageServer(Settings settings) throws IOException {
         this.settings = settings;
         this.textDocumentService = new CFTextDocumentService(this);
-        this.executor = buildExecutor(settings);
+        this.executor = buildExecutor();
         this.textDocumentService.setExecutor(this.executor);
         this.client = null;
         this.workspaceService = new CFWorkspaceService(this);
     }
 
-    private CheckExecutor buildExecutor(Settings settings) throws IOException {
+    private CheckExecutor buildExecutor() throws IOException {
         String checker = settings.getCheckerPath();
         logger.info("Launching CheckExecutor using " + checker);
         return new CheckExecutor(
@@ -108,8 +108,9 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      * @param config the new configuration
      */
     void didChangeConfiguration(Settings settings) {
+        this.settings = settings;
         try {
-            textDocumentService.setExecutor(buildExecutor(settings));
+            textDocumentService.setExecutor(buildExecutor());
         } catch (IOException e) {
             logger.severe("Failed to change configuration: " + e.toString());
         }

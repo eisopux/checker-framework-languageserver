@@ -1,5 +1,7 @@
 package org.checkerframework.languageserver;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.gson.Gson;
 import java.io.*;
 import java.util.*;
@@ -89,7 +91,7 @@ class CheckExecutor {
             for (File f : files) {
                 sb.append(f.getCanonicalPath()).append("\n");
             }
-            OutputStreamWriter osw = new OutputStreamWriter(wrapper.getOutputStream());
+            OutputStreamWriter osw = new OutputStreamWriter(wrapper.getOutputStream(), UTF_8);
             osw.write(sb.toString());
             osw.flush();
         } catch (IOException e) {
@@ -103,7 +105,7 @@ class CheckExecutor {
         @Override
         public void run() {
             InputStream stdout = wrapper.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
+            BufferedReader br = new BufferedReader(new InputStreamReader(stdout, UTF_8));
             while (true) {
                 try {
                     String diag = br.readLine();

@@ -1,6 +1,7 @@
 package org.checkerframework.languageserver;
 
 import java.util.Arrays;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.cli.*;
@@ -33,7 +34,8 @@ public class ServerMain {
                     LSPLauncher.createServerLauncher(server, System.in, System.out);
             LanguageClient client = launcher.getRemoteProxy();
             server.connect(client);
-            launcher.startListening();
+            Future f = launcher.startListening();
+            f.get();
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
             System.exit(1);

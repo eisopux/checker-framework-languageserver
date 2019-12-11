@@ -1,5 +1,7 @@
 package org.checkerframework.languageserver;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.gson.Gson;
 import java.util.*;
 import javax.tools.*;
@@ -17,7 +19,7 @@ public class JavacWrapper {
 
     public static void main(String[] args) {
         JavacWrapper javacw = new JavacWrapper(args);
-        Scanner input = new Scanner(System.in);
+        Scanner input = new Scanner(System.in, UTF_8.name());
 
         while (input.hasNextLine()) {
             javacw.compile(input.nextLine());
