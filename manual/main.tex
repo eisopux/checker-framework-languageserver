@@ -213,7 +213,7 @@ In later sections of this report, we will show that with an existing language se
 
 \begin{figure}[ht]
 \centering
-\includegraphics[scale=0.3]{relation.png}
+\includegraphics[scale=0.35]{relation.png}
 \caption{Relation of the three components.}
 \label{fig:components-relation}
 \end{figure}
@@ -285,7 +285,7 @@ Several classes are created for this module, and they will be introduced below i
 
 \begin{figure}[ht]
 \centering
-\includegraphics[scale=0.3]{infoflow.png}
+\includegraphics[scale=0.35]{infoflow.png}
 \caption{The flow of information within the language server.}
 \label{fig:ls-modules}
 \end{figure}
@@ -429,14 +429,14 @@ The answer is positive. Based on Checker Framework, Checker Framework Inference\
 
 In terms of the design and implementation of language server, the room for improvement clearly exists.  Contrary to the practice of defining the type of member variables and arguments of methods as interfaces, concrete classes are mostly used in this project, which is not very scalable and violates the rule of high cohesion/low coupling.  In the future, it would be beneficial to review the methods provided by each class and interface, and probably re-design the relation between classes.
 
-Lastly, more tests should be created and done, especially for the plugin module. The environments when running the plugin will certainly vary greatly from user to user, and there may be many cases that we forget to handle. What if the operating system is Windows? What if the user wants to download Checker Framework from another organization? What if ...?
+Lastly, it would be ideal if more tests can be created and run, especially for the plugin module. The environments when running the plugin will certainly vary greatly from user to user, and there may be many cases that we forget to handle. What if the operating system is Windows? What if the user wants to download Checker Framework from another organization? What if ...?
 
 
 \section{Conclusion}
 
 In this report, we gave introductions on Checker Framework, a type-checking framework for Java language that is based on annotations, and Language Server Protocol, a communication protocol for unifying and easing the development of plugins for source code editors. Based on these, we described the design and implementation of a plugin for VS Code which can provide the functionalities of Checker Framework in a very user-friendly way.
 
-As shown, our core module, language server, can be easily integrated into any editor that has support for LSP, and IntelliJ IDEA is used as an example. This demonstrates the potential of LSP, which significantly decreases the difficulty of developing plugins by separating the setting up and actual processing of source files.
+As shown, our core module, language server, can be easily integrated into any editor that has support for LSP, IntelliJ IDEA and Eclipse is used as an example. This demonstrates the potential of LSP, which significantly decreases the difficulty of developing plugins by separating the setting up and actual processing of source files.
 
 
 
