@@ -35,7 +35,12 @@ Please see [eisopux/checker-framework-vscode](https://github.com/eisopux/checker
 
 ### IntelliJ IDEA
 
-This language server can be used directly with the help of [gtache/intellij-lsp](https://github.com/gtache/intellij-lsp). Provide a raw command to it to launch this language server and it's done.
+This language server can be used directly with the help of [gtache/intellij-lsp](https://github.com/gtache/intellij-lsp). Provide a raw command to it to launch this language server and it's done. Please also refer to [eisopux/checker-framework-idea
+](https://github.com/eisopux/checker-framework-idea).
+
+### Eclipse
+
+Please see [eisopux/checker-framework-eclipse](https://github.com/eisopux/checker-framework-eclipse).
 
 ## Notes for Development
 
