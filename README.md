@@ -65,7 +65,7 @@ As LSP4J lacks documentation, it's suggested that the developer of this project
 uses an IDE supporting auto-completion so the methods/interfaces/classes of
 LSP4J can be easily inspected to figure out what is actually given/expected.
 
-To format the source code, run `$ ./gradlew goJF`.
+To format the source code, run `$ ./gradlew spotlessApply`.
 
 ## Dependency on Checker Framework
 

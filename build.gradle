@@ -15,7 +15,8 @@ plugins {
 
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 
-    id 'com.github.sherter.google-java-format' version '0.8'
+    id 'com.diffplug.gradle.spotless' version '3.27.2'
+
     id 'net.ltgt.errorprone' version '1.1.1'
 }
 
@@ -45,6 +46,8 @@ shadowJar {
     }
 }
 
-googleJavaFormat {
-    options style: 'AOSP'
+spotless {
+    java {
+        googleJavaFormat().aosp()
+    }
 }
