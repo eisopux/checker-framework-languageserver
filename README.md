@@ -10,11 +10,10 @@ implemented with [LSP4J](https://github.com/eclipse/lsp4j)
 ## How to Build
 
 ```shell
-./gradlew shadowJar
+./gradlew assemble
 ```
 
-and then `checker-framework-languageserver-all.jar` will be generated under
-`build/libs`.
+will generate `build/libs/checker-framework-languageserver-all.jar`.
 
 
 ## How to Use
