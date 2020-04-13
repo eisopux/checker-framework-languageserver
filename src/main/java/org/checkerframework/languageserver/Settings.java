@@ -6,7 +6,7 @@ import java.util.List;
 
 class Settings {
     @SerializedName(CFLanguageServer.SERVER_NAME)
-    Config config;
+    final Config config;
 
     Settings(Config config) {
         this.config = config;

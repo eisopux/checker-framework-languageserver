@@ -7,7 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DidChangeTextDocumentParams;
+import org.eclipse.lsp4j.DidCloseTextDocumentParams;
+import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 /** This class does all the dirty works on source files. */
@@ -42,7 +50,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     /** Convert raw diagnostics from the compiler to the LSP counterpart. */
-    private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic diagnostic) {
+    private Diagnostic convertToLSPDiagnostic(javax.tools.Diagnostic<?> diagnostic) {
         DiagnosticSeverity severity;
         switch (diagnostic.getKind()) {
             case ERROR:
@@ -58,18 +66,14 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 severity = DiagnosticSeverity.Information;
         }
 
+        int startLine = (int) diagnostic.getLineNumber() - 1;
+        int startCol = (int) diagnostic.getColumnNumber() - 1;
+        int endCol = (int) (startCol + diagnostic.getEndPosition() - diagnostic.getStartPosition());
+        Position startPos = new Position(startLine, startCol);
+        Position endPos = new Position(startLine, endCol);
+
         return new Diagnostic(
-                new Range(
-                        new Position(
-                                (int) diagnostic.getLineNumber() - 1,
-                                (int) diagnostic.getColumnNumber() - 1),
-                        new Position(
-                                (int) diagnostic.getLineNumber() - 1,
-                                (int)
-                                        (diagnostic.getColumnNumber()
-                                                + diagnostic.getEndPosition()
-                                                - diagnostic.getStartPosition()
-                                                - 1))),
+                new Range(startPos, endPos),
                 diagnostic.getMessage(null),
                 severity,
                 CFLanguageServer.SERVER_NAME,
@@ -149,13 +153,12 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     @Override
-    public void publish(Map<String, List<javax.tools.Diagnostic>> result) {
-        for (Map.Entry<String, List<javax.tools.Diagnostic>> entry : result.entrySet()) {
+    public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
+        for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
             server.publishDiagnostics(
                     new PublishDiagnosticsParams(
                             entry.getKey(),
-                            entry.getValue()
-                                    .stream()
+                            entry.getValue().stream()
                                     .map(this::convertToLSPDiagnostic)
                                     .collect(Collectors.toList())));
         }

@@ -3,8 +3,16 @@ package org.checkerframework.languageserver;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
-import org.eclipse.lsp4j.*;
-import org.eclipse.lsp4j.services.*;
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.lsp4j.services.TextDocumentService;
+import org.eclipse.lsp4j.services.WorkspaceService;
 
 /** The actual language server, responsible for communicating with the client (editor). */
 public class CFLanguageServer implements LanguageServer, LanguageClientAware {
@@ -16,7 +24,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
 
     private LanguageClient client;
     private Settings settings;
-    private CheckExecutor executor;
+    private final CheckExecutor executor;
 
     private final CFTextDocumentService textDocumentService;
     private final CFWorkspaceService workspaceService;
@@ -105,7 +113,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      * Accepts a new configuration set by the user (called from {@link CFWorkspaceService}). The new
      * configuration is then passed to {@link CFTextDocumentService}.
      *
-     * @param config the new configuration
+     * @param settings the new settings
      */
     void didChangeConfiguration(Settings settings) {
         this.settings = settings;

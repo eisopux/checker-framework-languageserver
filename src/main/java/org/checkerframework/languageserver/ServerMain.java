@@ -4,7 +4,11 @@ import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -13,12 +17,13 @@ import org.eclipse.lsp4j.services.LanguageClient;
 public class ServerMain {
 
     private static final Logger logger = Logger.getLogger(ServerMain.class.getName());
+
     private static final String OPT_FRAMEWORKPATH = "frameworkPath";
     private static final String OPT_CHECKERS = "checkers";
     private static final String OPT_COMMANDLINEOPTIONS = "commandLineOptions";
 
     /**
-     * The entry point of application. Sets up and launches {@link CFLanguageServer}.
+     * The entry point of the application. Sets up and launches {@link CFLanguageServer}.
      *
      * @param args the input arguments
      * @see <a
@@ -28,13 +33,13 @@ public class ServerMain {
     public static void main(String[] args) {
         try {
             Settings settings = getSettings(args);
-            logger.info("Launching checker framework languageserver");
+            logger.info("Launching the Checker Framework language server");
             CFLanguageServer server = new CFLanguageServer(settings);
             Launcher<LanguageClient> launcher =
                     LSPLauncher.createServerLauncher(server, System.in, System.out);
             LanguageClient client = launcher.getRemoteProxy();
             server.connect(client);
-            Future f = launcher.startListening();
+            Future<?> f = launcher.startListening();
             f.get();
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);

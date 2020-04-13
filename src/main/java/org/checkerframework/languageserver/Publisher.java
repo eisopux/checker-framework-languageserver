@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import javax.tools.Diagnostic;
 
-interface Publisher {
-    void publish(Map<String, List<Diagnostic>> result);
+/** A publisher for javac diagnostic results. */
+public interface Publisher {
+    /** @param diagnostics mapping from resource location to list of javac diagnostics */
+    void publish(Map<String, List<Diagnostic<?>>> diagnostics);
 }

@@ -4,17 +4,20 @@ import java.util.Locale;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
+/**
+ * JSON wrapper to communicate javac diagnostics from {@link JavacWrapper} to {@link CheckExecutor}.
+ */
 public class CFDiagnostic implements Diagnostic {
 
-    final String fileUri;
-    final String kind;
-    final long position;
-    final long startPosition;
-    final long endPosition;
-    final long lineNumber;
-    final long columnNumber;
-    final String code;
-    final String message;
+    private final String fileUri;
+    private final String kind;
+    private final long position;
+    private final long startPosition;
+    private final long endPosition;
+    private final long lineNumber;
+    private final long columnNumber;
+    private final String code;
+    private final String message;
 
     CFDiagnostic(Diagnostic<? extends JavaFileObject> diagnostic) {
         fileUri = diagnostic.getSource().toUri().toString();
