@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Diagnostic;
@@ -13,6 +14,10 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
@@ -162,5 +167,21 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                                     .map(this::convertToLSPDiagnostic)
                                     .collect(Collectors.toList())));
         }
+    }
+
+
+    /**
+     * The hover request is sent from the client to the server to request hover
+     * information at a given text document position.
+     *
+     * Registration Options: TextDocumentRegistrationOptions
+     */
+    @Override
+    public CompletableFuture<Hover> hover(HoverParams params) {
+        logger.info(params.toString());
+
+        Hover result = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, "Hello, Hover!"));
+        return CompletableFuture.completedFuture(result);
+        // return null;
     }
 }
