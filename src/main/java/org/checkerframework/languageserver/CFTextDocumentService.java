@@ -182,6 +182,5 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
         Hover result = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, "Hello, Hover!"));
         return CompletableFuture.completedFuture(result);
-        // return null;
     }
 }
