@@ -169,12 +169,11 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         }
     }
 
-
     /**
-     * The hover request is sent from the client to the server to request hover
-     * information at a given text document position.
+     * The hover request is sent from the client to the server to request hover information at a
+     * given text document position.
      *
-     * Registration Options: TextDocumentRegistrationOptions
+     * <p>Registration Options: TextDocumentRegistrationOptions
      */
     @Override
     public CompletableFuture<Hover> hover(HoverParams params) {
