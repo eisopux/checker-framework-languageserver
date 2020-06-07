@@ -66,7 +66,7 @@ LSP4J can be easily inspected to figure out what is actually given/expected.
 
 To format the source code, run `$ ./gradlew spotlessApply`.
 
-## Dependency on Checker Framework
+### Dependency on Checker Framework
 
 This project has a dependency on the Checker Framework, but it's only
 on `org.checkerframework.framework.util.CheckerMain`, which is used by
@@ -78,6 +78,16 @@ changes.
 The
 [eisopux/checker-framework-languageserver-downloader](https://github.com/eisopux/checker-framework-languageserver-downloader)
 project allows plugins to automatically download a Checker Framework release.
+
+### Using a locally-built Checker Framework language server
+
+Editor plugins auto-download the Checker Framework language server when they start.
+If you want to run with a locally-built language server instead:
+- build the language server locally `./gradlew assemble`;
+- consult the documentation for the editor plugin to determine where it looks
+  for the Checker Framework language server;
+- copy the `build/libs/checker-framework-languageserver-all.jar` file to that
+  directory.
 
 
 ## Acknowledgements
