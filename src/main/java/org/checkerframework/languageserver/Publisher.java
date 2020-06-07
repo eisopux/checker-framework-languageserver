@@ -6,6 +6,10 @@ import javax.tools.Diagnostic;
 
 /** A publisher for javac diagnostic results. */
 public interface Publisher {
-    /** @param diagnostics mapping from resource location to list of javac diagnostics */
+    /**
+     * Publish diagnostic results.
+     *
+     * @param diagnostics mapping from resource location to list of javac diagnostics
+     */
     void publish(Map<String, List<Diagnostic<?>>> diagnostics);
 }
