@@ -79,6 +79,12 @@ The
 [eisopux/checker-framework-languageserver-downloader](https://github.com/eisopux/checker-framework-languageserver-downloader)
 project allows plugins to automatically download a Checker Framework release.
 
+## Use editor with a locally-built language server 
+The editor will auto download the language server when the plugins get start. 
+If you want to run with a locally-built language server instead:
+Firstly, build the language server locally, then find the `checker-framework-languageserver-all.jar` in `build/libs`.
+Next, drop the jar file to the directory where the plugin will look for the language server.
+(This directory is set when the plugin first run. Please see the Readme for each specific plugins.)
 
 ## Acknowledgements
 
