@@ -123,6 +123,10 @@ class CheckExecutor {
                 try {
                     String diag = br.readLine();
                     logger.info("Got from wrapper: " + diag);
+                    if (diag == null) {
+                        logger.warning("Ignoring null return from wrapper");
+                        continue;
+                    }
                     CFDiagnosticList diags = gson.fromJson(diag, CFDiagnosticList.class);
                     Map<String, List<javax.tools.Diagnostic<?>>> ret = new HashMap<>();
                     for (CFDiagnostic d : diags.getDiagnostics()) {
@@ -136,8 +140,6 @@ class CheckExecutor {
                     publisher.publish(ret);
                 } catch (IOException e) {
                     logger.warning("Failed to read the output of wrapper: " + e.toString());
-                } catch (NullPointerException e) {
-                	logger.warning("Got NULL from wrapper");
                 }
             }
         }
