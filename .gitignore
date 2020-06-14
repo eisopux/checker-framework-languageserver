@@ -6,3 +6,13 @@ build
 
 .vscode
 .idea
+bin
+
+manual/main.pdf
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
