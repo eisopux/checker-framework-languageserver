@@ -1,13 +1,10 @@
 \documentclass{article}
 
-
-\usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \graphicspath{{img/}}
 
 \usepackage{color}
 \usepackage{multirow}
-\usepackage{slashbox}
 
 \usepackage{listings}
 \usepackage{xcolor}
@@ -20,17 +17,6 @@
     belowskip=1em
 }
 
-\usepackage{algorithm}
-\usepackage{algpseudocode}
-\usepackage{algorithmicx}
-\renewcommand{\algorithmicrequire}{\textbf{Input:}}
-\renewcommand{\algorithmicensure}{\textbf{Output:}}
-
-\renewcommand{\baselinestretch}{1}
-\renewcommand{\arraystretch}{1.3}
-
-% indent first paragraph
-\usepackage{indentfirst}
 % new line for urls
 \usepackage{hyperref}
 \makeatletter
@@ -46,95 +32,9 @@
 \g@addto@macro{\UrlBreaks}{\UrlAlphabet}
 \g@addto@macro{\UrlBreaks}{\UrlDigits}
 \makeatother
-% reduce spacing between bibliographies
-\usepackage{natbib}
-\setlength{\bibsep}{3.0pt}
 
-
-%you may inactive the following four commands, then it will become appearance of book pages
-
-\setlength{\topmargin}{-0.1in}
-\setlength{\textheight}{8.3in}
-\setlength{\oddsidemargin}{0.1 in}
-\setlength{\textwidth}{6.2 in}
 
 %%%%%%%%%
-
-
-%%%%%%%%%%%%%
-
-\newtheorem{fact}{Fact}
-% \newtheorem{algorithm}{Algorithm}
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
-\newtheorem{corollary}{Corollary}
-\newtheorem{property}{Property}
-\newtheorem{definition}{Definition}
-\newtheorem{proposition}{Proposition}
-\newtheorem{remark}{Remark}
-\newtheorem{conjecture}{Conjecture}
-
-\newcommand{\notsim}{{\, \not \sim \,}}
-
-\newcommand{\F}{\ensuremath{\mathbb F}}
-\newcommand{\Z}{\ensuremath{\mathbb Z}}
-\newcommand{\N}{\ensuremath{\mathbb N}}
-\newcommand{\Q}{\ensuremath{\mathbb Q}}
-\newcommand{\R}{\ensuremath{\mathbb R}}
-\newcommand{\C}{\ensuremath{\mathbb C}}
-
-\newcommand{\done}{\hfill $\Box$ }
-\newcommand{\rmap}{\stackrel{\rho}{\leftrightarrow}}
-\newcommand{\mys}{\vspace{0.15in}}
-
-\newcommand{\ebu}{{\bf{e}}}
-\newcommand{\Abu}{{\bf{A}}}
-\newcommand{\Bbu}{{\bf{B}}}
-
-\newcommand{\abu}{{\bf{a}}}
-\newcommand{\abuj}{{\bf{a_j}}}
-\newcommand{\bbu}{{\bf{b}}}
-\newcommand{\vbu}{{\bf{v}}}
-\newcommand{\ubu}{{\bf{u}}}
-\newcommand{\dbu}{{\bf{d}}}
-\newcommand{\tbu}{{\bf{t}}}
-\newcommand{\cbu}{{\bf{c}}}
-\newcommand{\kbu}{{\bf{k}}}
-\newcommand{\hbu}{{\bf{h}}}
-\newcommand{\sbu}{{\bf{s}}}
-\newcommand{\wbu}{{\bf{w}}}
-\newcommand{\xbu}{{\bf{x}}}
-\newcommand{\ybu}{{\bf{y}}}
-\newcommand{\zbu}{{\bf{z}}}
-
-
-\newcommand{\corres}{\leftrightarrow}
-
-\newcommand{\zero}{{\bf{0}}}
-\newcommand{\one}{{\bf{1}}}
-\newcommand{\nodiv}{{\, \not| \,}}
-\newcommand{\notequiv}{{\,\not\equiv\, }}
-
-
-%%%%%%%%%%%%%%
-
-\def\comb#1#2{{#1 \choose #2}}
-\newcommand{\ls}[1]
-    {\dimen0=\fontdimen6\the\font\lineskip=#1\dimen0
-     \advance\lineskip.5\fontdimen5\the\font
-     \advance\lineskip-\dimen0
-     \lineskiplimit=0.9\lineskip
-     \baselineskip=\lineskip
-     \advance\baselineskip\dimen0
-     \normallineskip\lineskip\normallineskiplimit\lineskiplimit
-     \normalbaselineskip\baselineskip
-     \ignorespaces}
-
-\def\stir#1#2{\left\{#1 \atop #2 \right\}}
-\def\dsum#1#2{#1 \atop #2 }
-\def\defn{\stackrel{\triangle}{=}}
-
-%%%%%%%%
 
 \bibliographystyle{unsrt}
 
@@ -142,93 +42,184 @@
 
 \bibliographystyle{abbrv}
 
-\title{Checker Framework Integration for Editors and Integrated Development Environments (IDEs) based on the Language Server Protocol (LSP)}
-\author{Jiangqi Zhang 20766023 jiangqi.zhang@uwaterloo.ca \\
-}
-
-% empty date = no empty line
+\title{Checker Framework Integration for Editors and Integrated Development
+  Environments (IDEs) based on the Language Server Protocol (LSP)}
+\author{Jiangqi Zhang 20766023 jiangqi.zhang@uwaterloo.ca}
 \date{}
+
 \maketitle
 
 \thispagestyle{plain}
 \setcounter{page}{1}
 
 \begin{abstract}
-
-This project report introduces a plugin for modern source code editors that is used for type-checking Java source files. This plugin is based on Checker Framework\cite{cf} and the Language Server Protocol (LSP)\cite{lsp}, the former a pluggable type checking framework for Java, and the latter a communication protocol between editors and plugins. With the help of these two, we are able to develop a type-checking plugin for Java that's usable for potentially every editor that supports LSP.
-
+This project report introduces a plugin for modern source code editors that is
+used for type-checking Java source files. This plugin is based on Checker
+Framework\cite{cf} and the Language Server Protocol (LSP)\cite{lsp}, the former
+a pluggable type checking framework for Java, and the latter a communication
+protocol between editors and plugins. With the help of these two, we are able to
+develop a type-checking plugin for Java that's usable for potentially every
+editor that supports LSP.
 \end{abstract}
-
-% controls line height
-\ls{1.2}
 
 \section{Introduction}
 
 % Pluggable type checking and Checker Framework
 
-Programming languages can be divided into two categories: statically typed languages and dynamically typed languages. Examples of the former are C/C++ and Java, and ensuring that the type of a variable is correct can be more easily done in this kind of languages; since the type of a variable never changes once it is defined, which is enforced by the compiler, we never need to worry that a variable defined as an integer will ever hold an instance of string.
+Programming languages can be divided into two categories: statically typed
+languages and dynamically typed languages. Examples of the former are C/C++ and
+Java, and ensuring that the type of a variable is correct can be more easily
+done in this kind of languages; since the type of a variable never changes once
+it is defined, which is enforced by the compiler, we never need to worry that a
+variable defined as an integer will ever hold an instance of string.
 
-However, built-in type systems still cannot catch all errors that may cause a program to crash, and the most notorious error may be the null pointer exception (NPE) in Java.  To resolve issues like this, a practical tool to use is pluggable type checkers\cite{cf-ori} that are used as plugins to compilers.  By inserting extra meta-information into the code, such as an annotation \verb|@Nullable|, pluggable type checkers enable us to add more constraints to the source code without too much effort and changes to the original code.
+However, built-in type systems still cannot catch all errors that may cause a
+program to crash, and the most notorious error may be the null pointer exception
+(NPE) in Java. To resolve issues like this, a practical tool to use is pluggable
+type checkers\cite{cf-ori} that are used as plugins to compilers. By inserting
+extra meta-information into the code, such as an annotation \verb|@Nullable|,
+pluggable type checkers enable us to add more constraints to the source code
+without too much effort and changes to the original code.
 
-Checker Framework\cite{cf} is probably the most commonly used tool to conduct such a job of pluggable type checking. It provides a simple way to define qualifiers and type checkers. In addition, it also ships with many built-in checkers that are ready for use out of the box.  With the same set of parameters as a normal \verb|javac| compiler, a developer does not need to learn much before utilizing this tool to enjoy the features provided by those many checkers.
+Checker Framework\cite{cf} is probably the most commonly used tool to conduct
+such a job of pluggable type checking. It provides a simple way to define
+qualifiers and type checkers. In addition, it also ships with many built-in
+checkers that are ready for use out of the box. With the same set of parameters
+as a normal \verb|javac| compiler, a developer does not need to learn much
+before utilizing this tool to enjoy the features provided by those many
+checkers.
 
-In this project, we advance the easiness of using Checker Framework by one more step, by creating plugins for editors and IDEs based on Checker Framework.  While running the Checker Framework by ``compiling" source files from time to time is not too complex, it is still more attracting if we can get diagnostic information of our source code when editing the source file like getting auto-completes.
+In this project, we advance the easiness of using Checker Framework by one more
+step, by creating plugins for editors and IDEs based on Checker Framework. While
+running the Checker Framework by ``compiling" source files from time to time is
+not too complex, it is still more attracting if we can get diagnostic
+information of our source code when editing the source file like getting
+auto-completes.
 
-In conjunction with this, we also explore implementing such plugins using the Language Server Protocol (LSP)\cite{lsp}, a protocol that provides unified interfaces for plugins to communicate with editors and IDEs, which significantly eases the development and integration of plugins. In latter sections, we will show that our core module built with LSP, the language server, can be integrated into VS Code and IntelliJ IDEA with very few effort. We will also show that, with the help of another Undergraduate Research Assistant project, the language server can be easily integrated into Eclipse.
+In conjunction with this, we also explore implementing such plugins using the
+Language Server Protocol (LSP)\cite{lsp}, a protocol that provides unified
+interfaces for plugins to communicate with editors and IDEs, which significantly
+eases the development and integration of plugins. In latter sections, we will
+show that our core module built with LSP, the language server, can be integrated
+into VS Code and IntelliJ IDEA with very few effort. We will also show that,
+with the help of another Undergraduate Research Assistant project, the language
+server can be easily integrated into Eclipse.
+
 
 \section{Related Work}
 
 \subsection{Checker Framework}
 
-Proposed in \cite{cf-ori}, Checker Framework is a ``pluggable" tool for Java compilers to conduct type-checking in a way that is stricter and richer in semantics.  The most straightforward way to do type-checking is probably to use keywords that is built into the language and compiler to describe the metadata of variables, classes, etc. One example can be the keyword \verb|final| in Java and \verb|const| in C/C++. The problem of using keywords is that the whole toolchain will need to be modified to accommodate new keywords, and this can be difficult and time-consuming for an ordinary developer who only wants to add a seemingly simple constraint to variables. 
+Proposed in \cite{cf-ori}, Checker Framework is a ``pluggable" tool for Java
+compilers to conduct type-checking in a way that is stricter and richer in
+semantics. The most straightforward way to do type-checking is probably to use
+keywords that is built into the language and compiler to describe the metadata
+of variables, classes, etc. One example can be the keyword \verb|final| in Java
+and \verb|const| in C/C++. The problem of using keywords is that the whole
+toolchain will need to be modified to accommodate new keywords, and this can be
+difficult and time-consuming for an ordinary developer who only wants to add a
+seemingly simple constraint to variables.
 
-Thanks to the evolution of Java, new functionalities were added, and they later formed the foundation of Checker Framework. In JSR 175\cite{jsr175}, annotation was proposed and finally integrated into Java, and JSR 308\cite{jsr308} furthered it by including type declarations in the acceptable targets of annotations, which is used by Checker Framework to store metadata that defines constraints on variables. For instance, when using the Nullness Checker, a developer needs to add annotations, such as \verb|@Nullable| and \verb|@NonNull|, for Checker Framework to work:
+Thanks to the evolution of Java, new functionalities were added, and they later
+formed the foundation of Checker Framework. In JSR 175\cite{jsr175}, annotation
+was proposed and finally integrated into Java, and JSR 308\cite{jsr308}
+furthered it by including type declarations in the acceptable targets of
+annotations, which is used by Checker Framework to store metadata that defines
+constraints on variables. For instance, when using the Nullness Checker, a
+developer needs to add annotations, such as \verb|@Nullable| and
+\verb|@NonNull|, for Checker Framework to work:
 
 \begin{lstlisting}
 @Nullable Object obj1;
 @NonNull Object obj2;    
 \end{lstlisting}
 
-With these annotations, we can express the constraints that \verb|obj1| can hold a value of \verb|null|, whereas \verb|obj2| is not supposed to hold \verb|null|, and by doing this, if there is a line that is dereferencing \verb|obj1| without checking its value, the Nullness Checker will report an error:
+With these annotations, we can express the constraints that \verb|obj1| can hold
+a value of \verb|null|, whereas \verb|obj2| is not supposed to hold \verb|null|,
+and by doing this, if there is a line that is dereferencing \verb|obj1| without
+checking its value, the Nullness Checker will report an error:
 
 \begin{lstlisting}
 [dereference.of.nullable] dereference of possibly-null reference obj1
 \end{lstlisting}
 
-In reality, there are more checkers that are available for use, and using them only requires running the customized script provided in the distribution of Checker Framework, whose arguments are compatible with those of \verb|javac|.
+In reality, there are more checkers that are available for use, and using them
+only requires running the customized script provided in the distribution of
+Checker Framework, whose arguments are compatible with those of \verb|javac|.
 
 \subsection{Language Server Protocol}
 
-The Language Server Protocol (LSP) is a communication protocol, which is based on JSON-RPC, that is proposed by Microsoft to ease the development of plugins for source code editors. Previously, the common way of enabling syntax highlight, auto-complete, error detection and jumping through function definitions in source code editors is to develop a plugin for all editors. What this means is that for every editor, the developer will have to develop a plugin in a language that is supported by that editor, usually the language the editor is implemented in, and this also usually requires the developer to implement all those complicated language-aware features again and again.
+The Language Server Protocol (LSP) is a communication protocol, which is based
+on JSON-RPC, that is proposed by Microsoft to ease the development of plugins
+for source code editors. Previously, the common way of enabling syntax
+highlight, auto-complete, error detection and jumping through function
+definitions in source code editors is to develop a plugin for all editors. What
+this means is that for every editor, the developer will have to develop a plugin
+in a language that is supported by that editor, usually the language the editor
+is implemented in, and this also usually requires the developer to implement all
+those complicated language-aware features again and again.
 
-Then LSP comes; it (greatly) abstracts the editor from the plugin. Instead of developing the plugin based on the interfaces provided directly from the editor, which are different between different editors, now we only need to develop against the unified interface provided by LSP. In other words, LSP is a bridge between editors and plugins.
+Then LSP comes; it (greatly) abstracts the editor from the plugin. Instead of
+developing the plugin based on the interfaces provided directly from the editor,
+which are different between different editors, now we only need to develop
+against the unified interface provided by LSP. In other words, LSP is a bridge
+between editors and plugins.
 
-In practice, developers of plugins will now develop a single backend service, the language server, for a language that implements all the features, in any language, and a simple wrapper plugin in the language required by the editor, in which the actual communication between the language server and the editor will be set up, and this communication can be done using the standard input/output.
+In practice, developers of plugins will now develop a single backend service,
+the language server, for a language that implements all the features, in any
+language, and a simple wrapper plugin in the language required by the editor, in
+which the actual communication between the language server and the editor will
+be set up, and this communication can be done using the standard input/output.
 
-In later sections of this report, we will show that with an existing language server based on Checker Framework, the integration of it in IntelliJ IDEA can be completed by filling only one string configuration.
+In later sections of this report, we will show that with an existing language
+server based on Checker Framework, the integration of it in IntelliJ IDEA can be
+completed by filling only one string configuration.
+
 
 \section{Components of the Plugin}
 
 \subsection{Overview}
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
 \includegraphics[scale=0.35]{relation.png}
 \caption{Relation of the three components.}
 \label{fig:components-relation}
 \end{figure}
 
-In this section, we will introduce our design and implementation of the language server, a dependency downloader which acts as a helper for the plugin, and the actual plugin for VS Code. The first two are written in Java only because Checker Framework is written in Java, and the plugin is written in Typescript as advised by VS Code. They can be found at \url{https://github.com/eisopux/}.
+In this section, we will introduce our design and implementation of the language
+server, a dependency downloader which acts as a helper for the plugin, and the
+actual plugin for VS Code. The first two are written in Java only because
+Checker Framework is written in Java, and the plugin is written in Typescript as
+advised by VS Code. They can be found at \url{https://github.com/eisopux/}.
 
-These three components have some interactions when working, as shown in Figure \ref{fig:components-relation}.  The plugin for VS Code communicates directly with VS Code, and it is the first to run among all components.  During initialization, it checks if the language server and Checker Framework exists on the user's disk, and if they do not, it uses the downloader, which is bundled with the plugin, to download the latest versions of them from Github.
+These three components have some interactions when working, as shown in Figure
+\ref{fig:components-relation}. The plugin for VS Code communicates directly with
+VS Code, and it is the first to run among all components. During initialization,
+it checks if the language server and Checker Framework exists on the user's
+disk, and if they do not, it uses the downloader, which is bundled with the
+plugin, to download the latest versions of them from Github.
 
-When the plugin finds that all dependencies are satisfied, it launches the language server, the core of the whole project, whose standard input and output follow the Language Server Protocol.  After initialization, events such as the opening of a \verb|.java| file is sent from the editor to the plugin natively, and then this event is sent to the language server by the plugin using LSP via standard input/output.  When Checker Framework detects any error in a source file, the diagnostic information is sent in the reverse direction from the language server to the editor.
+When the plugin finds that all dependencies are satisfied, it launches the
+language server, the core of the whole project, whose standard input and output
+follow the Language Server Protocol. After initialization, events such as the
+opening of a \verb|.java| file is sent from the editor to the plugin natively,
+and then this event is sent to the language server by the plugin using LSP via
+standard input/output. When Checker Framework detects any error in a source
+file, the diagnostic information is sent in the reverse direction from the
+language server to the editor.
 
 \subsection{Language Server}
 
-This is the main module of the entire plugin that actually invokes the Checker Framework. It is a standalone program that can be launched, and as described previously, it uses the standard input/output to communicate with other programs, following the Language Server Protocol. This module is primarily based on LSP4J\cite{lsp4j}, an implementation of LSP in Java.
+This is the main module of the entire plugin that actually invokes the Checker
+Framework. It is a standalone program that can be launched, and as described
+previously, it uses the standard input/output to communicate with other
+programs, following the Language Server Protocol. This module is primarily based
+on LSP4J\cite{lsp4j}, an implementation of LSP in Java.
 
-As a concrete example, if an editor opens a source file \verb|SomeClass.java|, then the input to the language server that is generated by the LSP library from the editor side is:
+As a concrete example, if an editor opens a source file \verb|SomeClass.java|,
+then the input to the language server that is generated by the LSP library from
+the editor side is:
 
 \begin{lstlisting}
 Content-Length: 671
@@ -247,7 +238,10 @@ Content-Length: 671
 }
 \end{lstlisting}
 
-The input is similar to an HTTP request. Note that the field \verb|text| is truncated; in reality it is the content of the file. After the source file is checked by our language server, the output, following the Language Server Protocol as well, could be:
+The input is similar to an HTTP request. Note that the field \verb|text| is
+truncated; in reality it is the content of the file. After the source file is
+checked by our language server, the output, following the Language Server
+Protocol as well, could be:
 
 \begin{lstlisting}
 Content-Length: 759
@@ -279,11 +273,19 @@ Content-Length: 759
 }
 \end{lstlisting}
 
-The response is not difficult to understand; it returns some diagnostic information to the editor, which specifies the path of the source file, the row and column range of related text, etc.
+The response is not difficult to understand; it returns some diagnostic
+information to the editor, which specifies the path of the source file, the row
+and column range of related text, etc.
 
-Several classes are created for this module, and they will be introduced below in top-down order. An overview of how information flows between the classes of this module is shown in Figure \ref{fig:ls-modules}. Since the plugin only invokes the main entry point once, and the main entry point of the language server only starts one instance of the language server class, the lines between \verb|Plugin|, \verb|ServerMain| and \verb|CFLanguageServer| are dotted to indicate this transience.
+Several classes are created for this module, and they will be introduced below
+in top-down order. An overview of how information flows between the classes of
+this module is shown in Figure \ref{fig:ls-modules}. Since the plugin only
+invokes the main entry point once, and the main entry point of the language
+server only starts one instance of the language server class, the lines between
+\verb|Plugin|, \verb|ServerMain| and \verb|CFLanguageServer| are dotted to
+indicate this transience.
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
 \includegraphics[scale=0.35]{infoflow.png}
 \caption{The flow of information within the language server.}
@@ -292,42 +294,117 @@ Several classes are created for this module, and they will be introduced below i
 
 \subsubsection{ServerMain}
 
-\verb|ServerMain| is the main entry point of this module. First it accepts command line options, including the path to the Checker Framework, list of checkers to use, and command line options that are going to be passed to Checker Framework. After this, it instantiates the language server class, \verb|CFLanguageServer|.
+\verb|ServerMain| is the main entry point of this module. First it accepts
+command line options, including the path to the Checker Framework, list of
+checkers to use, and command line options that are going to be passed to Checker
+Framework. After this, it instantiates the language server class,
+\verb|CFLanguageServer|.
 
 \subsubsection{CFLanguageServer}
 
-This class is the interchange for the source code editor client and other classes that do the actual dirty work. Several important components are in this class as member variables.
+This class is the interchange for the source code editor client and other
+classes that do the actual dirty work. Several important components are in this
+class as member variables.
 
 \begin{itemize}
-    \item \verb|Settings settings|: this variable stores configuration information that can be set in the editor for this plugin, which are the same as the command line options. Although we can launch this language server with command line options, but LSP requires that the language server is able to accept new configuration information on the fly, and the reason command line options are needed is that some editors, such as Eclipse, do not send configuration information during initialization, so the language server will need a set of initial values.
-    \item \verb|CheckExecutor executor|: this is the (first-level) wrapper of Checker Framework; it accepts a list of files to check, and publishes diagnostics to the editor if there are any. We will describe its implementation in detail later.
-    \item \verb|CFTextDocumentService textDocumentService|: this variable receives events of a file from the editor, e.g. open, change, save, close. In our language server, a file is checked when it is opened or saved, and this is done by passing the file to \verb|CheckExecutor| in respective methods. When a file is closed, it also clears diagnostics of this file, so the pane showing problems in editors only shows information about open files.
-    \item \verb|CFWorkspaceService workspaceService|: this variable receives events about the workspace (usually a folder opened in an editor). Currently it only propagates the event of changed configuration to other parts of the language server, so a new CheckExecutor reflecting the new configuration can be created.
+    \item \verb|Settings settings|: this variable stores configuration
+      information that can be set in the editor for this plugin, which are the
+      same as the command line options. Although we can launch this language
+      server with command line options, but LSP requires that the language
+      server is able to accept new configuration information on the fly, and the
+      reason command line options are needed is that some editors, such as
+      Eclipse, do not send configuration information during initialization, so
+      the language server will need a set of initial values.
+
+    \item \verb|CheckExecutor executor|: this is the (first-level) wrapper of
+      Checker Framework; it accepts a list of files to check, and publishes
+      diagnostics to the editor if there are any. We will describe its
+      implementation in detail later.
+
+    \item \verb|CFTextDocumentService textDocumentService|: this variable
+      receives events of a file from the editor, e.g. open, change, save, close.
+      In our language server, a file is checked when it is opened or saved, and
+      this is done by passing the file to \verb|CheckExecutor| in respective
+      methods. When a file is closed, it also clears diagnostics of this file,
+      so the pane showing problems in editors only shows information about open
+      files.
+
+    \item \verb|CFWorkspaceService workspaceService|: this variable receives
+      events about the workspace (usually a folder opened in an editor).
+      Currently it only propagates the event of changed configuration to other
+      parts of the language server, so a new CheckExecutor reflecting the new
+      configuration can be created.
 \end{itemize}
 
 \subsubsection{CheckExecutor}
 
-This class is responsible for launching Checker Framework and using it to type-check files. Because in order to launch Checker Framework correctly, the class path and the bootstrap classpath need to be properly set to include several jar files of Checker Framework, and it is not very ideal to hard code all these arguments, the launcher class of Checker Framework, \verb|CheckerMain|, is used by this class to retrieve arguments.
+This class is responsible for launching Checker Framework and using it to
+type-check files. Because in order to launch Checker Framework correctly, the
+class path and the bootstrap classpath need to be properly set to include
+several jar files of Checker Framework, and it is not very ideal to hard code
+all these arguments, the launcher class of Checker Framework,
+\verb|CheckerMain|, is used by this class to retrieve arguments.
 
-As you may notice, launching Checker Framework in this way is a little odd, as according to the documentation, we should be able to use a script that is already bundled with Checker Framework which accepts the same arguments as a normal javac. The reason we run Checker Framework in a programmatic way like this is that by doing this, we are able to get diagnostic information as Java objects (\verb|javax.tools.Diagnostic|), otherwise we will have to parse the lines printed by Checker Framework, which is neither robust nor easy to implement.
+As you may notice, launching Checker Framework in this way is a little odd, as
+according to the documentation, we should be able to use a script that is
+already bundled with Checker Framework which accepts the same arguments as a
+normal javac. The reason we run Checker Framework in a programmatic way like
+this is that by doing this, we are able to get diagnostic information as Java
+objects (\verb|javax.tools.Diagnostic|), otherwise we will have to parse the
+lines printed by Checker Framework, which is neither robust nor easy to
+implement.
 
-Besides, there are two things we need to mention about starting Checker Framework. The first is that Checker Framework is started in a separate process. This is because the jar files needed by Checker Framework are very different from those needed by the language server, and we decided to give it a more dedicated environment to run to avoid any issue.
+Besides, there are two things we need to mention about starting Checker
+Framework. The first is that Checker Framework is started in a separate process.
+This is because the jar files needed by Checker Framework are very different
+from those needed by the language server, and we decided to give it a more
+dedicated environment to run to avoid any issue.
 
-The second is that instead of starting Checker Framework directly, we launch a wrapper of it, \verb|JavacWrapper|, which makes the communication between this class and Checker Framework easier.  Recall that we want to run Checker Framework programmatically to obtain \verb|javax.tools.Diagnostic| and at the same time we want to give it a dedicated environment. These two goals are actually conflicting; we can't fully separate a module while retaining the ability to call its methods.  Thus, we choose to sacrifice the separation a bit by creating a very thin wrapper for Checker Framework, which can programmatically call the methods of Checker Framework and is also simple enough to not be affected by the environment of Checker Framework.
+The second is that instead of starting Checker Framework directly, we launch a
+wrapper of it, \verb|JavacWrapper|, which makes the communication between this
+class and Checker Framework easier. Recall that we want to run Checker Framework
+programmatically to obtain \verb|javax.tools.Diagnostic| and at the same time we
+want to give it a dedicated environment. These two goals are actually
+conflicting; we can't fully separate a module while retaining the ability to
+call its methods. Thus, we choose to sacrifice the separation a bit by creating
+a very thin wrapper for Checker Framework, which can programmatically call the
+methods of Checker Framework and is also simple enough to not be affected by the
+environment of Checker Framework.
 
 \subsubsection{JavacWrapper}
 
-This class simulates the behavior of the actual Checker Framework as much as possible, and the only difference lies in its format of input and output, which is tailored for \verb|CheckExecutor|.
+This class simulates the behavior of the actual Checker Framework as much as
+possible, and the only difference lies in its format of input and output, which
+is tailored for \verb|CheckExecutor|.
 
-This class accepts the same parameters that can be used to launch Checker Framework, except that it does not accept paths to files we wish to check. Upon launching, it continuously reads lines of paths to files from its standard input, which is piped by \verb|CheckExecutor|. After the files are checked, diagnostics for them represented as \verb|javax.tools.Diagnostic| objects are obtained.
+This class accepts the same parameters that can be used to launch Checker
+Framework, except that it does not accept paths to files we wish to check. Upon
+launching, it continuously reads lines of paths to files from its standard
+input, which is piped by \verb|CheckExecutor|. After the files are checked,
+diagnostics for them represented as \verb|javax.tools.Diagnostic| objects are
+obtained.
 
-In order to return diagnostics to \verb|CheckExecutor|, they have to be serialized and printed to the standard output for \verb|CheckExecutor| to read. However, \verb|javax.tools.Diagnostic| cannot be serialized directly, so we first convert them into a custom class, and then convert this class to JSON.  After this, these JSON objects representing the original diagnostics are printed to the standard output, which is piped by \verb|CheckExecutor| as well and will finally be read and parsed, finishing the entire checking process.
+In order to return diagnostics to \verb|CheckExecutor|, they have to be
+serialized and printed to the standard output for \verb|CheckExecutor| to read.
+However, \verb|javax.tools.Diagnostic| cannot be serialized directly, so we
+first convert them into a custom class, and then convert this class to JSON.
+After this, these JSON objects representing the original diagnostics are printed
+to the standard output, which is piped by \verb|CheckExecutor| as well and will
+finally be read and parsed, finishing the entire checking process.
 
 \subsection{Dependency Downloader}
 
-This is a utility program for plugins written for editors to get the latest version of language server and Checker Framework, so developers of different plugins do not need to bundle a fixed version of language server and Checker Framework with their plugins.
+This is a utility program for plugins written for editors to get the latest
+version of language server and Checker Framework, so developers of different
+plugins do not need to bundle a fixed version of language server and Checker
+Framework with their plugins.
 
-The implementation of this program is fairly straightforward; it uses the Github API to retrieve the latest releases of the language server and Checker Framework, and then downloads the corresponding assets. For example, the API used for Checker Framework is \url{https://api.github.com/repos/typetools/checker-framework/releases/latest}, and the response is a JSON object:
+The implementation of this program is fairly straightforward; it uses the Github
+API to retrieve the latest releases of the language server and Checker
+Framework, and then downloads the corresponding assets. For example, the API
+used for Checker Framework is
+\url{https://api.github.com/repos/typetools/checker-framework/releases/latest},
+and the response is a JSON object:
 
 \begin{lstlisting}
 {
@@ -344,9 +421,14 @@ The implementation of this program is fairly straightforward; it uses the Github
 }
 \end{lstlisting}
 
-With this, it is able to download the language server and Checker Framework, as long as they are published as a release and provides a distribution file.
+With this, it is able to download the language server and Checker Framework, as
+long as they are published as a release and provides a distribution file.
 
-The arguments of this program include a path to a folder in which the files will be downloaded, the organization and repository to download Checker Framework and language server. It prints the resulting jar file of language server and directory containing the unzipped Checker Framework to the standard output, starting with ``Got: ". A sample run of this program is:
+The arguments of this program include a path to a folder in which the files will
+be downloaded, the organization and repository to download Checker Framework and
+language server. It prints the resulting jar file of language server and
+directory containing the unzipped Checker Framework to the standard output,
+starting with ``Got: ". A sample run of this program is:
 
 \begin{lstlisting}
 $ java -jar checker-framework-languageserver-downloader-all.jar \
@@ -361,28 +443,47 @@ Got /Users/joe/Downloads/checker-framework-3.0.1
 
 \subsection{VS Code Plugin}
 
-This program is the glue between VS Code and our language server, and is the only editor-specific module. It is developed with the implementation of LSP in VS Code, vscode-languageserver-node\cite{vslsp}. Only 1 method is required to be implemented by us, \verb|activate|, which is called when this plugin is activated the first time a Java file is opened/changed/saved/closed.
+This program is the glue between VS Code and our language server, and is the
+only editor-specific module. It is developed with the implementation of LSP in
+VS Code, vscode-languageserver-node\cite{vslsp}. Only 1 method is required to be
+implemented by us, \verb|activate|, which is called when this plugin is
+activated the first time a Java file is opened/changed/saved/closed.
 
-In this module, we first check if Checker Framework and the language server exists on the user's computer, and run the downloader if they do not exist. If we need to download the language server and Checker Framework, their paths are set in the configuration file of the workspace opened in VS Code.
+In this module, we first check if Checker Framework and the language server
+exists on the user's computer, and run the downloader if they do not exist. If
+we need to download the language server and Checker Framework, their paths are
+set in the configuration file of the workspace opened in VS Code.
 
-After all these are done, commands for launching our language server is returned, and then vscode-languageserver-node takes cares of the rest, including starting the language server and passing requests/receiving responses.
+After all these are done, commands for launching our language server is
+returned, and then vscode-languageserver-node takes cares of the rest, including
+starting the language server and passing requests/receiving responses.
 
-With this design, users do not need to set anything except the JDK environment to enjoy the features of Checker Framework.
+With this design, users do not need to set anything except the JDK environment
+to enjoy the features of Checker Framework.
+
 
 \section{Usage Examples}
 
 \subsection{VS Code}
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
 \includegraphics[scale=0.5]{demo-vscode.png}
 \caption{Detecting dereferencing null in VS Code.}
 \label{fig:demo-vscode}
 \end{figure}
 
-For instructions on installing this extension, please refer to \url{https://github.com/eisopux/checker-framework-vscode}, as it may change. A basic usage of this plugin would be to use the Nullness Checker of Checker Framework to detect possible dereferencing of \verb|null|s. A screenshot of this is Figure \ref{fig:demo-vscode}.
+For instructions on installing this extension, please refer to
+\url{https://github.com/eisopux/checker-framework-vscode}, as it may change. A
+basic usage of this plugin would be to use the Nullness Checker of Checker
+Framework to detect possible dereferencing of \verb|null|s. A screenshot of this
+is Figure \ref{fig:demo-vscode}.
 
-The argument of the method \verb|foo|, \verb|obj1|, is annotated with \verb|@Nullable|, meaning that its value is possible to be \verb|null|, so executing line 6 could result in a null pointer exception. This problem reported by our language server is listed in the PROBLEMS pane, and a squiggly line is drawn under the related text.
+The argument of the method \verb|foo|, \verb|obj1|, is annotated with
+\verb|@Nullable|, meaning that its value is possible to be \verb|null|, so
+executing line 6 could result in a null pointer exception. This problem reported
+by our language server is listed in the PROBLEMS pane, and a squiggly line is
+drawn under the related text.
 
 
 \subsection{IntelliJ IDEA}
@@ -394,9 +495,14 @@ The argument of the method \verb|foo|, \verb|obj1|, is annotated with \verb|@Nul
 \label{fig:demo-idea}
 \end{figure}
 
-IDEA has a plugin providing the LSP support\cite{idealsp}, and we will use it to demonstrate the generality of our language server.
+IDEA has a plugin providing the LSP support\cite{idealsp}, and we will use it to
+demonstrate the generality of our language server.
 
-Although it is not as easy as using the extension for VS Code, but it is still very quick to set everything up. First, we need to download the language server and Checker Framework, and then unzip Checker Framework. Then, we need to provide the command for launching the language server to this plugin. A sample command could be:
+Although it is not as easy as using the extension for VS Code, but it is still
+very quick to set everything up. First, we need to download the language server
+and Checker Framework, and then unzip Checker Framework. Then, we need to
+provide the command for launching the language server to this plugin. A sample
+command could be:
 
 \begin{lstlisting}
 java \
@@ -406,73 +512,122 @@ org.checkerframework.languageserver.ServerMain \
 --checkers org.checkerframework.checker.nullness.NullnessChecker
 \end{lstlisting}
 
-and the place to input this command is Preferences - Languages \& Frameworks - Language Server Protocol - Server Definitions, then choose ``Raw command", and for the extension ``java". The errors detected are also shown as a squiggly line in the editor, as shown in Figure \ref{fig:demo-idea}.
+and the place to input this command is Preferences - Languages \& Frameworks -
+Language Server Protocol - Server Definitions, then choose ``Raw command", and
+for the extension ``java". The errors detected are also shown as a squiggly line
+in the editor, as shown in Figure \ref{fig:demo-idea}.
 
 
 \subsection{Eclipse}
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
 \includegraphics[scale=0.6]{demo-eclipse.png}
 \caption{Detecting dereferencing null in Eclipse.}
 \label{fig:demo-eclipse}
 \end{figure}
 
-Unlike IntelliJ IDEA, there has not been a generic LSP-support plugin yet, so some code has to be written to use the language server.  In Eclipse, LSP4E is the bridge between Eclipse and our language server, and it is used by the plugin implementation for Eclipse.  This library defines several classes and interfaces that we can inherit or implement to establish the communication between Eclipse and our language server.  While it is not as easy as building the VS Code plugin, its responsibility is pretty similar its VS Code counterpart: download and launch the language server upon activation, and pass parameters set by the user to the language server.
+Unlike IntelliJ IDEA, there has not been a generic LSP-support plugin yet, so
+some code has to be written to use the language server. In Eclipse, LSP4E is the
+bridge between Eclipse and our language server, and it is used by the plugin
+implementation for Eclipse. This library defines several classes and interfaces
+that we can inherit or implement to establish the communication between Eclipse
+and our language server. While it is not as easy as building the VS Code plugin,
+its responsibility is pretty similar its VS Code counterpart: download and
+launch the language server upon activation, and pass parameters set by the user
+to the language server.
 
 
 \section{Future Work}
 
-In this project, we have implemented most of the functions required to have type-checking in our editors that have Language Server Protocol support, but in advanced IDEs like IntelliJ IDEA, the functionality of intelligently proposing fixes and refactors for problems is not rare, and make us ask: is it possible for Checker Framework to do this as well?
+In this project, we have implemented most of the functions required to have
+type-checking in our editors that have Language Server Protocol support, but in
+advanced IDEs like IntelliJ IDEA, the functionality of intelligently proposing
+fixes and refactors for problems is not rare, and make us ask: is it possible
+for Checker Framework to do this as well?
 
-The answer is positive. Based on Checker Framework, Checker Framework Inference\cite{cfi}\cite{cfirepo} is able to infer type annotations given a program with no annotations.  The language server will be worth of much higher value for developers if it supports both type-checking and generating type annotations.  Similarly, it is also very worthwhile to explore the possibility of refactoring code to resolve type errors.
+The answer is positive. Based on Checker Framework, Checker Framework
+Inference\cite{cfi}\cite{cfirepo} is able to infer type annotations given a
+program with no annotations. The language server will be worth of much higher
+value for developers if it supports both type-checking and generating type
+annotations. Similarly, it is also very worthwhile to explore the possibility of
+refactoring code to resolve type errors.
 
-In terms of the design and implementation of language server, the room for improvement clearly exists.  Contrary to the practice of defining the type of member variables and arguments of methods as interfaces, concrete classes are mostly used in this project, which is not very scalable and violates the rule of high cohesion/low coupling.  In the future, it would be beneficial to review the methods provided by each class and interface, and probably re-design the relation between classes.
+In terms of the design and implementation of language server, the room for
+improvement clearly exists. Contrary to the practice of defining the type of
+member variables and arguments of methods as interfaces, concrete classes are
+mostly used in this project, which is not very scalable and violates the rule of
+high cohesion/low coupling. In the future, it would be beneficial to review the
+methods provided by each class and interface, and probably re-design the
+relation between classes.
 
-Lastly, it would be ideal if more tests can be created and run, especially for the plugin module. The environments when running the plugin will certainly vary greatly from user to user, and there may be many cases that we forget to handle. What if the operating system is Windows? What if the user wants to download Checker Framework from another organization? What if ...?
+Lastly, it would be ideal if more tests can be created and run, especially for
+the plugin module. The environments when running the plugin will certainly vary
+greatly from user to user, and there may be many cases that we forget to handle.
+What if the operating system is Windows? What if the user wants to download
+Checker Framework from another organization? What if ...?
 
 
 \section{Conclusion}
 
-In this report, we gave introductions on Checker Framework, a type-checking framework for Java language that is based on annotations, and Language Server Protocol, a communication protocol for unifying and easing the development of plugins for source code editors. Based on these, we described the design and implementation of a plugin for VS Code which can provide the functionalities of Checker Framework in a very user-friendly way.
+In this report, we gave introductions on Checker Framework, a type-checking
+framework for Java language that is based on annotations, and Language Server
+Protocol, a communication protocol for unifying and easing the development of
+plugins for source code editors. Based on these, we described the design and
+implementation of a plugin for VS Code which can provide the functionalities of
+Checker Framework in a very user-friendly way.
 
-As shown, our core module, language server, can be easily integrated into any editor that has support for LSP, IntelliJ IDEA and Eclipse is used as an example. This demonstrates the potential of LSP, which significantly decreases the difficulty of developing plugins by separating the setting up and actual processing of source files.
+As shown, our core module, language server, can be easily integrated into any
+editor that has support for LSP, IntelliJ IDEA and Eclipse is used as an
+example. This demonstrates the potential of LSP, which significantly decreases
+the difficulty of developing plugins by separating the setting up and actual
+processing of source files.
 
 
-
-% decrease line height
-\ls{1.0}
 \begin{thebibliography}{1}
 
 \bibitem{cf} Checker Framework, \url{https://checkerframework.org/}.
 
-\bibitem{lsp} Language Server Protocol, \url{https://microsoft.github.io/language-server-protocol/}.
+\bibitem{lsp} Language Server Protocol,
+  \url{https://microsoft.github.io/language-server-protocol/}.
 
-\bibitem{checkers} Dietl W, Dietzel S, Ernst MD, Muşlu K, Schiller TW. Building and using pluggable type-checkers. In Proceedings of the 33rd International Conference on Software Engineering 2011 May 21 (pp. 681-690). ACM.
+\bibitem{checkers} Dietl W, Dietzel S, Ernst MD, Muşlu K, Schiller TW. Building
+  and using pluggable type-checkers. In Proceedings of the 33rd International
+  Conference on Software Engineering 2011 May 21 (pp. 681-690). ACM.
 
 \bibitem{vscode} Visual Studio Code, \url{https://code.visualstudio.com/}.
 
 \bibitem{idea} IntelliJ IDEA, \url{https://www.jetbrains.com/idea/}.
 
-\bibitem{cf-ori} Papi MM, Ali M, Correa Jr TL, Perkins JH, Ernst MD. Practical pluggable types for Java. InProceedings of the 2008 international symposium on Software testing and analysis 2008 Jul 20 (pp. 201-212). ACM.
+\bibitem{cf-ori} Papi MM, Ali M, Correa Jr TL, Perkins JH, Ernst MD. Practical
+  pluggable types for Java. InProceedings of the 2008 international symposium on
+  Software testing and analysis 2008 Jul 20 (pp. 201-212). ACM.
 
-\bibitem{jsr175} JSR 175: A Metadata Facility for the Java Programming Language, \url{https://jcp.org/en/jsr/detail?id=175}.
+\bibitem{jsr175} JSR 175: A Metadata Facility for the Java Programming Language,
+  \url{https://jcp.org/en/jsr/detail?id=175}.
 
-\bibitem{jsr308} JSR 308: Annotations on Java Types, \url{https://jcp.org/en/jsr/detail?id=308}.
+\bibitem{jsr308} JSR 308: Annotations on Java Types,
+  \url{https://jcp.org/en/jsr/detail?id=308}.
 
-\bibitem{lsp4j} LSP4J, \url{https://projects.eclipse.org/projects/technology.lsp4j}.
+\bibitem{lsp4j} LSP4J,
+  \url{https://projects.eclipse.org/projects/technology.lsp4j}.
 
-\bibitem{lsp4e} LSP4e, \url{https://projects.eclipse.org/projects/technology.lsp4e}.
+\bibitem{lsp4e} LSP4e,
+  \url{https://projects.eclipse.org/projects/technology.lsp4e}.
 
-\bibitem{vslsp} vscode-languageserver-node, \url{https://github.com/microsoft/vscode-languageserver-node}.
+\bibitem{vslsp} vscode-languageserver-node,
+  \url{https://github.com/microsoft/vscode-languageserver-node}.
 
-\bibitem{idealsp} LSP Support for IDEA, \url{https://plugins.jetbrains.com/plugin/10209-lsp-support/}.
+\bibitem{idealsp} LSP Support for IDEA,
+  \url{https://plugins.jetbrains.com/plugin/10209-lsp-support/}.
 
-\bibitem{cfi} Li, Jianchu. A General Pluggable Type Inference Framework and its use for Data-flow Analysis. MS thesis. University of Waterloo, 2017.
+\bibitem{cfi} Li, Jianchu. A General Pluggable Type Inference Framework and its
+  use for Data-flow Analysis. MS thesis. University of Waterloo, 2017.
 
-\bibitem{cfirepo} Checker Framework Inference
-, \url{https://github.com/typetools/checker-framework-inference}.
+\bibitem{cfirepo} Checker Framework Inference,
+  \url{https://github.com/typetools/checker-framework-inference}.
 
 \end{thebibliography}
+
 \end{document}
 
