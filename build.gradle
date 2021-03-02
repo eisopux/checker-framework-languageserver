@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.checkerframework:checker:3.10.0'
+    implementation 'org.checkerframework:checker:3.11.0'
     implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.10.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'commons-cli:commons-cli:1.4'
