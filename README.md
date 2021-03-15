@@ -91,7 +91,7 @@ If you want to run with a locally-built language server instead:
 
 ### More information on LSPs
 This repo contains a report on plugins for modern source code editors for type-checking Java files. This plugin
-is based on information for Checker Framework and the Language Server Protocols (LSPs). This can be found 
+is based on information for the Checker Framework and the Language Server Protocols (LSPs). This can be found 
 [here](https://github.com/jainishmehta/checker-framework-languageserver/blob/master/manual/main.tex). You can put this report 
 through Overleaf to see the LaTeX output.
 
