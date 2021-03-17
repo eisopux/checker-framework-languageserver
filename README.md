@@ -89,6 +89,12 @@ If you want to run with a locally-built language server instead:
 - copy the `build/libs/checker-framework-languageserver-all.jar` file to that
   directory.
 
+### More information
+
+The report [Checker Framework Integration for Editors and Integrated Development Environments (IDEs) based on the
+Language Server Protocol (LSP)](https://github.com/eisopux/checker-framework-languageserver/blob/master/manual/main.tex)
+contains more technical details.
+
 
 ## Acknowledgements
 
