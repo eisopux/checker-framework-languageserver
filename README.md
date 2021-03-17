@@ -89,11 +89,12 @@ If you want to run with a locally-built language server instead:
 - copy the `build/libs/checker-framework-languageserver-all.jar` file to that
   directory.
 
-### More information on LSPs
-This repo contains a report on plugins for modern source code editors for type-checking Java files. This plugin
-is based on information for the Checker Framework and the Language Server Protocol (LSP). This can be found 
-[here](https://github.com/jainishmehta/checker-framework-languageserver/blob/master/manual/main.tex). You can put this report 
-through Overleaf to see the LaTeX output.
+### More information
+
+The report [Checker Framework Integration for Editors and Integrated Development Environments (IDEs) based on the
+Language Server Protocol (LSP)](https://github.com/eisopux/checker-framework-languageserver/blob/master/manual/main.tex)
+contains more technical details.
+
 
 ## Acknowledgements
 
