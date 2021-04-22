@@ -18,7 +18,7 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
     testImplementation 'junit:junit:4.13.2'
     errorprone('com.google.errorprone:error_prone_core:2.6.0')
-    errorproneJavac('com.google.errorprone:javac:9+181-r4173-1')
+    errorproneJavac('com.google.errorprone:javac:1+')
 }
 
 application {
