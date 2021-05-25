@@ -1,13 +1,12 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'com.diffplug.spotless' version '5.12.5'
     id 'net.ltgt.errorprone' version '2.0.1'
 }
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -23,7 +22,7 @@ dependencies {
 
 application {
     // Define the main class for the application
-    mainClassName = 'org.checkerframework.languageserver.ServerMain'
+    mainClass = 'org.checkerframework.languageserver.ServerMain'
 }
 
 shadowJar {
