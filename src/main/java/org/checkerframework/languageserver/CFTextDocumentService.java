@@ -27,7 +27,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 
 /** This class does all the dirty works on source files. */
 public class CFTextDocumentService implements TextDocumentService, Publisher {
-    
+
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
 
     private final CFLanguageServer server;
