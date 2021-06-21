@@ -181,15 +181,18 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     @Override
     public CompletableFuture<Hover> hover(HoverParams params) {
         generateTestData();
-        // line 1 on vscode is 0 
+        // line 1 on vscode is 0
         int line = params.getPosition().getLine();
         logger.info(params.toString());
 
-        if(typeRefinementMapping.get(line) != null) {
-            Hover result = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, typeRefinementMapping.get(line)));
+        if (typeRefinementMapping.get(line) != null) {
+            Hover result =
+                    new Hover(
+                            new MarkupContent(
+                                    MarkupKind.PLAINTEXT, typeRefinementMapping.get(line)));
             return CompletableFuture.completedFuture(result);
         }
-        
+
         return CompletableFuture.completedFuture(null);
     }
 
