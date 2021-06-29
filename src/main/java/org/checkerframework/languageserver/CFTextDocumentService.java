@@ -6,6 +6,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -32,7 +33,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private final CFLanguageServer server;
     private CheckExecutor executor;
-    private RangeMap<Integer, String> typeRefinementMapping = TreeRangeMap.create();
+    private RangeMap<ComparablePosition, String> typeRefinementMapping = TreeRangeMap.create();
 
     CFTextDocumentService(CFLanguageServer server) {
         this.server = server;
@@ -162,13 +163,36 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     @Override
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
+        typeRefinementMapping.clear();
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
             server.publishDiagnostics(
                     new PublishDiagnosticsParams(
                             entry.getKey(),
                             entry.getValue().stream()
+                                    .filter(x -> x.getKind() != javax.tools.Diagnostic.Kind.NOTE)
                                     .map(this::convertToLSPDiagnostic)
                                     .collect(Collectors.toList())));
+            entry.getValue().stream()
+                    .filter(x -> x.getKind() == javax.tools.Diagnostic.Kind.NOTE)
+                    .forEach(
+                            i -> {
+                                ComparablePosition start =
+                                        new ComparablePosition(
+                                                new Position(
+                                                        (int) i.getLineNumber() - 1,
+                                                        (int) i.getColumnNumber() - 1));
+                                String msg = i.getMessage(Locale.getDefault());
+                                int nameLength = msg.split("variable=")[1].split("\"")[1].length();
+                                ComparablePosition end =
+                                        new ComparablePosition(
+                                                new Position(
+                                                        (int) i.getLineNumber() - 1,
+                                                        ((int) i.getColumnNumber())
+                                                                + nameLength
+                                                                - 1));
+                                typeRefinementMapping.put(
+                                        com.google.common.collect.Range.closed(start, end), msg);
+                            });
         }
     }
 
@@ -180,25 +204,19 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      */
     @Override
     public CompletableFuture<Hover> hover(HoverParams params) {
-        generateTestData();
         // line 1 on vscode is 0
         int line = params.getPosition().getLine();
-        logger.info(params.toString());
-
-        if (typeRefinementMapping.get(line) != null) {
+        int character = params.getPosition().getCharacter();
+        ComparablePosition currentPosition = new ComparablePosition(new Position(line, character));
+        if (typeRefinementMapping.get(currentPosition) != null) {
             Hover result =
                     new Hover(
                             new MarkupContent(
-                                    MarkupKind.PLAINTEXT, typeRefinementMapping.get(line)));
+                                    MarkupKind.PLAINTEXT,
+                                    typeRefinementMapping.get(currentPosition)));
             return CompletableFuture.completedFuture(result);
         }
 
         return CompletableFuture.completedFuture(null);
-    }
-
-    private void generateTestData() {
-        typeRefinementMapping.put(com.google.common.collect.Range.closed(1, 2), "type 1");
-        typeRefinementMapping.put(com.google.common.collect.Range.closed(3, 4), "type 2");
-        typeRefinementMapping.put(com.google.common.collect.Range.closed(7, 9), "type 3");
     }
 }
