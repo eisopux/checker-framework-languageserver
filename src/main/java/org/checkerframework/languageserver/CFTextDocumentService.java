@@ -5,6 +5,7 @@ import com.google.common.collect.TreeRangeMap;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,7 +34,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private final CFLanguageServer server;
     private CheckExecutor executor;
-    private RangeMap<ComparablePosition, String> typeRefinementMapping = TreeRangeMap.create();
+    private HashMap<String, RangeMap<ComparablePosition, String>> typeRefinementMapping =
+            new HashMap<>();
 
     CFTextDocumentService(CFLanguageServer server) {
         this.server = server;
@@ -52,10 +54,15 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      */
     private void clearDiagnostics(List<File> files) {
         files.forEach(
-                file ->
-                        server.publishDiagnostics(
-                                new PublishDiagnosticsParams(
-                                        file.toURI().toString(), Collections.emptyList())));
+                file -> {
+                    String typeRefinementKey =
+                            file.toURI().toString().replace("file:/c:", "file:///c%3A");
+                    if (typeRefinementMapping.containsKey(typeRefinementKey))
+                        typeRefinementMapping.get(typeRefinementKey).clear();
+                    server.publishDiagnostics(
+                            new PublishDiagnosticsParams(
+                                    file.toURI().toString(), Collections.emptyList()));
+                });
     }
 
     /** Convert raw diagnostics from the compiler to the LSP counterpart. */
@@ -163,7 +170,6 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     @Override
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
-        typeRefinementMapping.clear();
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
             server.publishDiagnostics(
                     new PublishDiagnosticsParams(
@@ -172,6 +178,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                                     .filter(x -> x.getKind() != javax.tools.Diagnostic.Kind.NOTE)
                                     .map(this::convertToLSPDiagnostic)
                                     .collect(Collectors.toList())));
+            String currentKey = entry.getKey().replace("C:", "c%3A");
             entry.getValue().stream()
                     .filter(x -> x.getKind() == javax.tools.Diagnostic.Kind.NOTE)
                     .forEach(
@@ -190,8 +197,28 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                                                         ((int) i.getColumnNumber())
                                                                 + nameLength
                                                                 - 1));
-                                typeRefinementMapping.put(
-                                        com.google.common.collect.Range.closed(start, end), msg);
+                                String displayMsg = msg.substring(msg.indexOf(",") + 1);
+                                if (!typeRefinementMapping.containsKey(currentKey)) {
+                                    RangeMap<ComparablePosition, String> rangeMap =
+                                            TreeRangeMap.create();
+                                    typeRefinementMapping.put(currentKey, rangeMap);
+                                }
+                                if (typeRefinementMapping.get(currentKey).get(start) == null)
+                                    typeRefinementMapping
+                                            .get(currentKey)
+                                            .put(
+                                                    com.google.common.collect.Range.closed(
+                                                            start, end),
+                                                    displayMsg);
+                                else
+                                    typeRefinementMapping
+                                            .get(currentKey)
+                                            .put(
+                                                    com.google.common.collect.Range.closed(
+                                                            start, end),
+                                                    typeRefinementMapping.get(currentKey).get(start)
+                                                            + "\n"
+                                                            + displayMsg);
                             });
         }
     }
@@ -208,12 +235,15 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         int line = params.getPosition().getLine();
         int character = params.getPosition().getCharacter();
         ComparablePosition currentPosition = new ComparablePosition(new Position(line, character));
-        if (typeRefinementMapping.get(currentPosition) != null) {
+        String curFile = params.getTextDocument().getUri();
+
+        if (typeRefinementMapping.containsKey(curFile)
+                && typeRefinementMapping.get(curFile).get(currentPosition) != null) {
             Hover result =
                     new Hover(
                             new MarkupContent(
                                     MarkupKind.PLAINTEXT,
-                                    typeRefinementMapping.get(currentPosition)));
+                                    typeRefinementMapping.get(curFile).get(currentPosition)));
             return CompletableFuture.completedFuture(result);
         }
 
