@@ -34,7 +34,11 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private final CFLanguageServer server;
     private CheckExecutor executor;
-    private HashMap<String, RangeMap<ComparablePosition, String>> typeRefinementMapping =
+    /**
+     * Store Type refinement hover information for each file. Map key is file uri, value is a
+     * rangemap that stores position of variables and message
+     */
+    private final Map<String, RangeMap<ComparablePosition, String>> typeRefinementMapping =
             new HashMap<>();
 
     CFTextDocumentService(CFLanguageServer server) {
@@ -55,13 +59,13 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     private void clearDiagnostics(List<File> files) {
         files.forEach(
                 file -> {
-                    String typeRefinementKey =
-                            file.toURI().toString().replace("file:/c:", "file:///c%3A");
-                    if (typeRefinementMapping.containsKey(typeRefinementKey))
+                    String fileURI = file.toURI().toString();
+                    String typeRefinementKey = convertFileURIToDocURI(fileURI);
+                    if (typeRefinementMapping.containsKey(typeRefinementKey)) {
                         typeRefinementMapping.get(typeRefinementKey).clear();
+                    }
                     server.publishDiagnostics(
-                            new PublishDiagnosticsParams(
-                                    file.toURI().toString(), Collections.emptyList()));
+                            new PublishDiagnosticsParams(fileURI, Collections.emptyList()));
                 });
     }
 
@@ -168,6 +172,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 
+    /** Diagnostic Kind NOTE is used for Type Refinements */
     @Override
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
@@ -178,47 +183,12 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                                     .filter(x -> x.getKind() != javax.tools.Diagnostic.Kind.NOTE)
                                     .map(this::convertToLSPDiagnostic)
                                     .collect(Collectors.toList())));
-            String currentKey = entry.getKey().replace("C:", "c%3A");
+            String currentKey = convertEntryKeyToDocURI(entry.getKey());
             entry.getValue().stream()
                     .filter(x -> x.getKind() == javax.tools.Diagnostic.Kind.NOTE)
                     .forEach(
                             i -> {
-                                ComparablePosition start =
-                                        new ComparablePosition(
-                                                new Position(
-                                                        (int) i.getLineNumber() - 1,
-                                                        (int) i.getColumnNumber() - 1));
-                                String msg = i.getMessage(Locale.getDefault());
-                                int nameLength = msg.split("variable=")[1].split("\"")[1].length();
-                                ComparablePosition end =
-                                        new ComparablePosition(
-                                                new Position(
-                                                        (int) i.getLineNumber() - 1,
-                                                        ((int) i.getColumnNumber())
-                                                                + nameLength
-                                                                - 1));
-                                String displayMsg = msg.substring(msg.indexOf(",") + 1);
-                                if (!typeRefinementMapping.containsKey(currentKey)) {
-                                    RangeMap<ComparablePosition, String> rangeMap =
-                                            TreeRangeMap.create();
-                                    typeRefinementMapping.put(currentKey, rangeMap);
-                                }
-                                if (typeRefinementMapping.get(currentKey).get(start) == null)
-                                    typeRefinementMapping
-                                            .get(currentKey)
-                                            .put(
-                                                    com.google.common.collect.Range.closed(
-                                                            start, end),
-                                                    displayMsg);
-                                else
-                                    typeRefinementMapping
-                                            .get(currentKey)
-                                            .put(
-                                                    com.google.common.collect.Range.closed(
-                                                            start, end),
-                                                    typeRefinementMapping.get(currentKey).get(start)
-                                                            + "\n"
-                                                            + displayMsg);
+                                publishTypeRefinementhHelper(i, currentKey);
                             });
         }
     }
@@ -248,5 +218,48 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         }
 
         return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * Add Type Refinement Diagnostics into map. Checks variable name length using following:
+     *
+     * @see <a href="https://github.com/opprop/checker-framework/pull/178">specification</a>
+     */
+    private void publishTypeRefinementhHelper(javax.tools.Diagnostic<?> i, String currentKey) {
+        ComparablePosition start =
+                new ComparablePosition(
+                        new Position((int) i.getLineNumber() - 1, (int) i.getColumnNumber() - 1));
+        String msg = i.getMessage(Locale.getDefault());
+        int nameLength = msg.split("variable=")[1].split("\"")[1].length();
+        ComparablePosition end =
+                new ComparablePosition(
+                        new Position(
+                                (int) i.getLineNumber() - 1,
+                                ((int) i.getColumnNumber()) + nameLength - 1));
+        String displayMsg = msg.substring(msg.indexOf(",") + 1);
+        if (!typeRefinementMapping.containsKey(currentKey)) {
+            RangeMap<ComparablePosition, String> rangeMap = TreeRangeMap.create();
+            typeRefinementMapping.put(currentKey, rangeMap);
+        }
+
+        RangeMap<ComparablePosition, String> currentTypeRefinement =
+                typeRefinementMapping.get(currentKey);
+        if (currentTypeRefinement.get(start) == null) {
+            typeRefinementMapping
+                    .get(currentKey)
+                    .put(com.google.common.collect.Range.closed(start, end), displayMsg);
+        } else {
+            currentTypeRefinement.put(
+                    com.google.common.collect.Range.closed(start, end),
+                    currentTypeRefinement.get(start) + "\n" + displayMsg);
+        }
+    }
+
+    private String convertEntryKeyToDocURI(String entryKey) {
+        return entryKey.replace("C:", "c%3A").replace("D:", "d%3A");
+    }
+
+    private String convertFileURIToDocURI(String fileURI) {
+        return fileURI.replace("file:/", "file:///").replace("c:", "c%3A").replace("d:", "d%3a");
     }
 }

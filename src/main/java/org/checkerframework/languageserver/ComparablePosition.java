@@ -13,8 +13,9 @@ class ComparablePosition implements Comparable<ComparablePosition> {
     @Override
     public int compareTo(ComparablePosition o) {
         // compare the two positions
-        if (position.getLine() != o.position.getLine())
+        if (position.getLine() != o.position.getLine()) {
             return position.getLine() - o.position.getLine();
+        }
 
         return position.getCharacter() - o.position.getCharacter();
     }
