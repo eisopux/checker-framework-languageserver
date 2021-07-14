@@ -4,6 +4,7 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
@@ -176,20 +176,18 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     @Override
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
-            server.publishDiagnostics(
-                    new PublishDiagnosticsParams(
-                            entry.getKey(),
-                            entry.getValue().stream()
-                                    .filter(x -> x.getKind() != javax.tools.Diagnostic.Kind.NOTE)
-                                    .map(this::convertToLSPDiagnostic)
-                                    .collect(Collectors.toList())));
             String currentKey = convertEntryKeyToDocURI(entry.getKey());
+            List<Diagnostic> diagnostics = new ArrayList<>();
             entry.getValue().stream()
-                    .filter(x -> x.getKind() == javax.tools.Diagnostic.Kind.NOTE)
                     .forEach(
                             i -> {
-                                publishTypeRefinementhHelper(i, currentKey);
+                                if (i.getKind() == javax.tools.Diagnostic.Kind.NOTE) {
+                                    publishTypeRefinementhHelper(i, currentKey);
+                                } else {
+                                    diagnostics.add(convertToLSPDiagnostic(i));
+                                }
                             });
+            server.publishDiagnostics(new PublishDiagnosticsParams(entry.getKey(), diagnostics));
         }
     }
 
@@ -206,14 +204,14 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         int character = params.getPosition().getCharacter();
         ComparablePosition currentPosition = new ComparablePosition(new Position(line, character));
         String curFile = params.getTextDocument().getUri();
-
-        if (typeRefinementMapping.containsKey(curFile)
-                && typeRefinementMapping.get(curFile).get(currentPosition) != null) {
+        RangeMap<ComparablePosition, String> currentTypeRefinement =
+                typeRefinementMapping.get(curFile);
+        if (currentTypeRefinement != null && currentTypeRefinement.get(currentPosition) != null) {
             Hover result =
                     new Hover(
                             new MarkupContent(
                                     MarkupKind.PLAINTEXT,
-                                    typeRefinementMapping.get(curFile).get(currentPosition)));
+                                    currentTypeRefinement.get(currentPosition)));
             return CompletableFuture.completedFuture(result);
         }
 
@@ -226,10 +224,19 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      * @see <a href="https://github.com/opprop/checker-framework/pull/178">specification</a>
      */
     private void publishTypeRefinementhHelper(javax.tools.Diagnostic<?> i, String currentKey) {
+        /**
+         * Calculate start position by getting the current line number and column number and
+         * subtracting by one because starting index is 0
+         */
         ComparablePosition start =
                 new ComparablePosition(
                         new Position((int) i.getLineNumber() - 1, (int) i.getColumnNumber() - 1));
         String msg = i.getMessage(Locale.getDefault());
+
+        /**
+         * Calculate end position by getting length of name variable and adding that to start
+         * position
+         */
         int nameLength = msg.split("variable=")[1].split("\"")[1].length();
         ComparablePosition end =
                 new ComparablePosition(
@@ -245,9 +252,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         RangeMap<ComparablePosition, String> currentTypeRefinement =
                 typeRefinementMapping.get(currentKey);
         if (currentTypeRefinement.get(start) == null) {
-            typeRefinementMapping
-                    .get(currentKey)
-                    .put(com.google.common.collect.Range.closed(start, end), displayMsg);
+            currentTypeRefinement.put(
+                    com.google.common.collect.Range.closed(start, end), displayMsg);
         } else {
             currentTypeRefinement.put(
                     com.google.common.collect.Range.closed(start, end),
