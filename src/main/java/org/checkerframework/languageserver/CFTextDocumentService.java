@@ -178,15 +178,17 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
             String currentKey = convertEntryKeyToDocURI(entry.getKey());
             List<Diagnostic> diagnostics = new ArrayList<>();
-            entry.getValue().stream()
-                    .forEach(
-                            i -> {
-                                if (i.getKind() == javax.tools.Diagnostic.Kind.NOTE) {
-                                    publishTypeRefinementhHelper(i, currentKey);
-                                } else {
-                                    diagnostics.add(convertToLSPDiagnostic(i));
-                                }
-                            });
+            for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
+                String message = diagnostic.getMessage(Locale.getDefault());
+                if (diagnostic.getKind() == javax.tools.Diagnostic.Kind.NOTE) {
+                    if (message.contains("type.refinements")) {
+                        publishTypeRefinementhHelper(diagnostic, currentKey, message);
+                    }
+                } else {
+                    diagnostics.add(convertToLSPDiagnostic(diagnostic));
+                }
+            }
+
             server.publishDiagnostics(new PublishDiagnosticsParams(entry.getKey(), diagnostics));
         }
     }
@@ -223,7 +225,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      *
      * @see <a href="https://github.com/opprop/checker-framework/pull/178">specification</a>
      */
-    private void publishTypeRefinementhHelper(javax.tools.Diagnostic<?> i, String currentKey) {
+    private void publishTypeRefinementhHelper(
+            javax.tools.Diagnostic<?> i, String currentKey, String msg) {
         /**
          * Calculate start position by getting the current line number and column number and
          * subtracting by one because starting index is 0
@@ -231,7 +234,6 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         ComparablePosition start =
                 new ComparablePosition(
                         new Position((int) i.getLineNumber() - 1, (int) i.getColumnNumber() - 1));
-        String msg = i.getMessage(Locale.getDefault());
 
         /**
          * Calculate end position by getting length of name variable and adding that to start
@@ -243,7 +245,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                         new Position(
                                 (int) i.getLineNumber() - 1,
                                 ((int) i.getColumnNumber()) + nameLength - 1));
-        String displayMsg = msg.substring(msg.indexOf(",") + 1);
+        String displayMsg = msg.substring(msg.indexOf(";") + 1);
         if (!typeRefinementMapping.containsKey(currentKey)) {
             RangeMap<ComparablePosition, String> rangeMap = TreeRangeMap.create();
             typeRefinementMapping.put(currentKey, rangeMap);
