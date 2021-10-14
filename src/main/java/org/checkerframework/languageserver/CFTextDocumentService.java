@@ -2,6 +2,22 @@ package org.checkerframework.languageserver;
 
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
+import org.checkerframework.javacutil.BugInCF;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DidChangeTextDocumentParams;
+import org.eclipse.lsp4j.DidCloseTextDocumentParams;
+import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.MarkedString;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.services.TextDocumentService;
+
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -12,33 +28,25 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
-import org.eclipse.lsp4j.Diagnostic;
-import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.eclipse.lsp4j.DidChangeTextDocumentParams;
-import org.eclipse.lsp4j.DidCloseTextDocumentParams;
-import org.eclipse.lsp4j.DidOpenTextDocumentParams;
-import org.eclipse.lsp4j.DidSaveTextDocumentParams;
-import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.HoverParams;
-import org.eclipse.lsp4j.MarkupContent;
-import org.eclipse.lsp4j.MarkupKind;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.PublishDiagnosticsParams;
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.services.TextDocumentService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /** This class does all the dirty works on source files. */
 public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
 
+    private static final Pattern positionPattern = Pattern.compile("position=\\((\\d+), (\\d+), (\\d+), (\\d+)\\)");
+
     private final CFLanguageServer server;
     private CheckExecutor executor;
+
     /**
-     * Store Type refinement hover information for each file. Map key is file uri, value is a
-     * rangemap that stores position of variables and message
+     * Store hover type information for each file. Map key is file uri, value is a
+     * mapping from a range of positions to the corresponding type details.
      */
-    private final Map<String, RangeMap<ComparablePosition, String>> typeRefinementMapping =
+    private final Map<File, RangeMap<ComparablePosition, List<String>>> filesToTypeInfo =
             new HashMap<>();
 
     CFTextDocumentService(CFLanguageServer server) {
@@ -57,16 +65,15 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      *     href="https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics">specification</a>
      */
     private void clearDiagnostics(List<File> files) {
-        files.forEach(
-                file -> {
-                    String fileURI = file.toURI().toString();
-                    String typeRefinementKey = convertFileURIToDocURI(fileURI);
-                    if (typeRefinementMapping.containsKey(typeRefinementKey)) {
-                        typeRefinementMapping.get(typeRefinementKey).clear();
-                    }
-                    server.publishDiagnostics(
-                            new PublishDiagnosticsParams(fileURI, Collections.emptyList()));
-                });
+        for (File file : files) {
+            RangeMap<ComparablePosition, List<String>> currentTypeInfo = filesToTypeInfo.get(file);
+            if (currentTypeInfo != null) {
+                currentTypeInfo.clear();
+            }
+
+            server.publishDiagnostics(
+                    new PublishDiagnosticsParams(file.toURI().toString(), Collections.emptyList()));
+        }
     }
 
     /** Convert raw diagnostics from the compiler to the LSP counterpart. */
@@ -172,18 +179,17 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
     }
 
-    /** Diagnostic Kind NOTE is used for Type Refinements */
     @Override
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
-            String currentKey = convertEntryKeyToDocURI(entry.getKey());
             List<Diagnostic> diagnostics = new ArrayList<>();
+
             for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
                 String message = diagnostic.getMessage(Locale.getDefault());
-                if (diagnostic.getKind() == javax.tools.Diagnostic.Kind.NOTE) {
-                    if (message.contains("type.refinements")) {
-                        publishTypeRefinementhHelper(diagnostic, currentKey, message);
-                    }
+                if (message != null && message.contains("lsp.")) {
+                    // this message is for lsp support
+                    File file = new File(entry.getKey());
+                    publishTypeInformation(file, message);
                 } else {
                     diagnostics.add(convertToLSPDiagnostic(diagnostic));
                 }
@@ -201,73 +207,58 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      */
     @Override
     public CompletableFuture<Hover> hover(HoverParams params) {
-        // line 1 on vscode is 0
         int line = params.getPosition().getLine();
         int character = params.getPosition().getCharacter();
-        ComparablePosition currentPosition = new ComparablePosition(new Position(line, character));
-        String curFile = params.getTextDocument().getUri();
-        RangeMap<ComparablePosition, String> currentTypeRefinement =
-                typeRefinementMapping.get(curFile);
-        if (currentTypeRefinement != null && currentTypeRefinement.get(currentPosition) != null) {
-            Hover result =
-                    new Hover(
-                            new MarkupContent(
-                                    MarkupKind.PLAINTEXT,
-                                    currentTypeRefinement.get(currentPosition)));
-            return CompletableFuture.completedFuture(result);
+        ComparablePosition currentPosition = new ComparablePosition(line, character);
+        File curFile = new File(params.getTextDocument().getUri());
+        RangeMap<ComparablePosition, List<String>> typeInfo = filesToTypeInfo.get(curFile);
+
+        if (typeInfo != null) {
+            List<String> rawTypeInfoForHover = typeInfo.get(currentPosition);
+            if (rawTypeInfoForHover != null) {
+                List<Either<String, MarkedString>> typeInfoForHover = rawTypeInfoForHover.stream()
+                        .map(Either::<String, MarkedString>forLeft)
+                        .collect(Collectors.toList());
+                Hover result = new Hover(typeInfoForHover);
+                return CompletableFuture.completedFuture(result);
+            }
         }
 
         return CompletableFuture.completedFuture(null);
     }
 
-    /**
-     * Add Type Refinement Diagnostics into map. Checks variable name length using following:
-     *
-     * @see <a href="https://github.com/opprop/checker-framework/pull/178">specification</a>
-     */
-    private void publishTypeRefinementhHelper(
-            javax.tools.Diagnostic<?> i, String currentKey, String msg) {
-        /**
-         * Calculate start position by getting the current line number and column number and
-         * subtracting by one because starting index is 0
-         */
-        ComparablePosition start =
-                new ComparablePosition(
-                        new Position((int) i.getLineNumber() - 1, (int) i.getColumnNumber() - 1));
-
-        /**
-         * Calculate end position by getting length of name variable and adding that to start
-         * position
-         */
-        int nameLength = msg.split("variable=")[1].split("\"")[1].length();
-        ComparablePosition end =
-                new ComparablePosition(
-                        new Position(
-                                (int) i.getLineNumber() - 1,
-                                ((int) i.getColumnNumber()) + nameLength - 1));
-        String displayMsg = msg.substring(msg.indexOf(";") + 1);
-        if (!typeRefinementMapping.containsKey(currentKey)) {
-            RangeMap<ComparablePosition, String> rangeMap = TreeRangeMap.create();
-            typeRefinementMapping.put(currentKey, rangeMap);
+    private void publishTypeInformation(File file, String msg) {
+        if (!filesToTypeInfo.containsKey(file)) {
+            RangeMap<ComparablePosition, List<String>> rangeMap = TreeRangeMap.create();
+            filesToTypeInfo.put(file, rangeMap);
         }
 
-        RangeMap<ComparablePosition, String> currentTypeRefinement =
-                typeRefinementMapping.get(currentKey);
-        if (currentTypeRefinement.get(start) == null) {
-            currentTypeRefinement.put(
-                    com.google.common.collect.Range.closed(start, end), displayMsg);
-        } else {
-            currentTypeRefinement.put(
-                    com.google.common.collect.Range.closed(start, end),
-                    currentTypeRefinement.get(start) + "\n" + displayMsg);
+        String[] tokens = msg.split(";");
+        String typeInfo = String.join(";", tokens[0], tokens[1]);
+        String positionInfo = tokens[2].trim();
+        Matcher positionMatcher = positionPattern.matcher(positionInfo);
+        if (!positionMatcher.matches()) {
+            throw new BugInCF("Failed to parse node position!");
         }
-    }
 
-    private String convertEntryKeyToDocURI(String entryKey) {
-        return entryKey.replace("C:", "c%3A").replace("D:", "d%3A");
-    }
+        // CF reports position with 1-based index while lsp
+        // uses 0-based index
+        int startLine = Integer.parseInt(positionMatcher.group(1)) - 1;
+        int startCol = Integer.parseInt(positionMatcher.group(2)) - 1;
+        int endLine = Integer.parseInt(positionMatcher.group(3)) - 1;
+        int endCol = Integer.parseInt(positionMatcher.group(4)) - 1;
 
-    private String convertFileURIToDocURI(String fileURI) {
-        return fileURI.replace("file:/", "file:///").replace("c:", "c%3A").replace("d:", "d%3a");
+        ComparablePosition start = new ComparablePosition(startLine, startCol);
+        ComparablePosition end = new ComparablePosition(endLine, endCol);
+
+        RangeMap<ComparablePosition, List<String>> currentTypeInfo = filesToTypeInfo.get(file);
+        List<String> typeInfoForPosition = currentTypeInfo.get(start);
+        if (typeInfoForPosition == null) {
+            typeInfoForPosition = new ArrayList<>();
+        }
+
+        typeInfoForPosition.add(typeInfo);
+        currentTypeInfo.put(
+                com.google.common.collect.Range.closed(start, end), typeInfoForPosition);
     }
 }
