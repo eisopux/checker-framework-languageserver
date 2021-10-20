@@ -157,8 +157,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
         logger.info(params.toString());
-        clearDiagnostics(
-                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        File f = new File(URI.create(params.getTextDocument().getUri()));
+        clearDiagnostics(Collections.singletonList(f));
     }
 
     /**
@@ -173,10 +173,10 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
         logger.info(params.toString());
-        clearDiagnostics(
-                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
-        checkAndPublish(
-                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        File f = new File(URI.create(params.getTextDocument().getUri()));
+        List<File> files = Collections.singletonList(f);
+        clearDiagnostics(files);
+        checkAndPublish(files);
     }
 
     @Override
@@ -188,7 +188,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 String message = diagnostic.getMessage(Locale.getDefault());
                 if (message != null && message.contains("lsp.")) {
                     // this message is for lsp support
-                    File file = new File(entry.getKey());
+                    File file = new File(URI.create(entry.getKey()));
                     publishTypeInformation(file, message);
                 } else {
                     diagnostics.add(convertToLSPDiagnostic(diagnostic));
@@ -210,7 +210,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         int line = params.getPosition().getLine();
         int character = params.getPosition().getCharacter();
         ComparablePosition currentPosition = new ComparablePosition(line, character);
-        File curFile = new File(params.getTextDocument().getUri());
+        File curFile = new File(URI.create(params.getTextDocument().getUri()));
         RangeMap<ComparablePosition, List<String>> typeInfo = filesToTypeInfo.get(curFile);
 
         if (typeInfo != null) {
