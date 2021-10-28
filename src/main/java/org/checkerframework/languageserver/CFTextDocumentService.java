@@ -36,15 +36,16 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
 
-    private static final Pattern positionPattern =
-            Pattern.compile("position=\\((\\d+), (\\d+), (\\d+), (\\d+)\\)");
+    // Pattern of the range in CF message "lsp.type.information"
+    private static final Pattern rangePattern =
+            Pattern.compile("range=\\((\\d+), (\\d+), (\\d+), (\\d+)\\)");
 
     private final CFLanguageServer server;
     private CheckExecutor executor;
 
     /**
-     * Store hover type information for each file. Map key is file uri, value is a mapping from a
-     * range of positions to the corresponding type details.
+     * Store hover type information for each file. Map key is file, value is a mapping from a range
+     * of positions to the corresponding type messages.
      */
     private final Map<File, RangeMap<ComparablePosition, List<String>>> filesToTypeInfo =
             new HashMap<>();
@@ -93,6 +94,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 severity = DiagnosticSeverity.Information;
         }
 
+        // Line numbers and column numbers in Diagnostic are 1-based,
+        // while LSP clients use 0-based positions.
         int startLine = (int) diagnostic.getLineNumber() - 1;
         int startCol = (int) diagnostic.getColumnNumber() - 1;
         int endCol = (int) (startCol + diagnostic.getEndPosition() - diagnostic.getStartPosition());
@@ -186,10 +189,10 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
             for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
                 String message = diagnostic.getMessage(Locale.getDefault());
-                if (message != null && message.contains("lsp.")) {
+                if (message != null && message.contains("lsp.type.information")) {
                     // this message is for lsp support
                     File file = new File(URI.create(entry.getKey()));
-                    publishTypeInformation(file, message);
+                    publishTypeMessage(file, message);
                 } else {
                     diagnostics.add(convertToLSPDiagnostic(diagnostic));
                 }
@@ -228,26 +231,31 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         return CompletableFuture.completedFuture(null);
     }
 
-    private void publishTypeInformation(File file, String msg) {
+    /**
+     * Publish the given type message for the given file.
+     *
+     * @param file The file to which the type message corresponds.
+     * @param msg A type message which contains checker name, message kind, type information, and
+     *     the range of this type in the given file, separated by the delimiter ";".
+     */
+    private void publishTypeMessage(File file, String msg) {
         if (!filesToTypeInfo.containsKey(file)) {
             RangeMap<ComparablePosition, List<String>> rangeMap = TreeRangeMap.create();
             filesToTypeInfo.put(file, rangeMap);
         }
 
-        String[] tokens = msg.split(";");
-        String typeInfo = String.join(";", tokens[0], tokens[1]);
-        String positionInfo = tokens[2].trim();
-        Matcher positionMatcher = positionPattern.matcher(positionInfo);
-        if (!positionMatcher.matches()) {
+        int lastDelimiter = msg.lastIndexOf(';');
+        String typeInfo = msg.substring(0, lastDelimiter);
+        String positionInfo = msg.substring(lastDelimiter + 1).trim();
+        Matcher rangeMatcher = rangePattern.matcher(positionInfo);
+        if (!rangeMatcher.matches()) {
             throw new BugInCF("Failed to parse node position!");
         }
 
-        // CF reports position with 1-based index while lsp
-        // uses 0-based index
-        int startLine = Integer.parseInt(positionMatcher.group(1)) - 1;
-        int startCol = Integer.parseInt(positionMatcher.group(2)) - 1;
-        int endLine = Integer.parseInt(positionMatcher.group(3)) - 1;
-        int endCol = Integer.parseInt(positionMatcher.group(4)) - 1;
+        int startLine = Integer.parseInt(rangeMatcher.group(1));
+        int startCol = Integer.parseInt(rangeMatcher.group(2));
+        int endLine = Integer.parseInt(rangeMatcher.group(3));
+        int endCol = Integer.parseInt(rangeMatcher.group(4));
 
         ComparablePosition start = new ComparablePosition(startLine, startCol);
         ComparablePosition end = new ComparablePosition(endLine, endCol);
