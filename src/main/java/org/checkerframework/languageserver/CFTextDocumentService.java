@@ -67,10 +67,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      */
     private void clearDiagnostics(List<File> files) {
         for (File file : files) {
-            RangeMap<ComparablePosition, List<String>> currentTypeInfo = filesToTypeInfo.get(file);
-            if (currentTypeInfo != null) {
-                currentTypeInfo.clear();
-            }
+            filesToTypeInfo.remove(file);
 
             server.publishDiagnostics(
                     new PublishDiagnosticsParams(file.toURI().toString(), Collections.emptyList()));
@@ -239,11 +236,6 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      *     the range of this type in the given file, separated by the delimiter ";".
      */
     private void publishTypeMessage(File file, String msg) {
-        if (!filesToTypeInfo.containsKey(file)) {
-            RangeMap<ComparablePosition, List<String>> rangeMap = TreeRangeMap.create();
-            filesToTypeInfo.put(file, rangeMap);
-        }
-
         int lastDelimiter = msg.lastIndexOf(';');
         String typeInfo = msg.substring(0, lastDelimiter);
         String positionInfo = msg.substring(lastDelimiter + 1).trim();
@@ -261,6 +253,11 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         ComparablePosition end = new ComparablePosition(endLine, endCol);
 
         RangeMap<ComparablePosition, List<String>> currentTypeInfo = filesToTypeInfo.get(file);
+        if (currentTypeInfo == null) {
+            currentTypeInfo = TreeRangeMap.create();
+            filesToTypeInfo.put(file, currentTypeInfo);
+        }
+
         List<String> typeInfoForPosition = currentTypeInfo.get(start);
         if (typeInfoForPosition == null) {
             typeInfoForPosition = new ArrayList<>();
