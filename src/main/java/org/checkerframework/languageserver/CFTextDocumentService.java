@@ -1,21 +1,34 @@
 package org.checkerframework.languageserver;
 
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.checkerframework.javacutil.BugInCF;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 /** This class does all the dirty works on source files. */
@@ -23,8 +36,19 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
 
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
 
+    // Pattern of the range in CF message "lsp.type.information"
+    private static final Pattern rangePattern =
+            Pattern.compile("range=\\((\\d+), (\\d+), (\\d+), (\\d+)\\)");
+
     private final CFLanguageServer server;
     private CheckExecutor executor;
+
+    /**
+     * Store hover type information for each file. Map key is file, value is a mapping from a range
+     * of positions to the corresponding type messages.
+     */
+    private final Map<File, RangeMap<ComparablePosition, List<String>>> filesToTypeInfo =
+            new HashMap<>();
 
     CFTextDocumentService(CFLanguageServer server) {
         this.server = server;
@@ -42,11 +66,12 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      *     href="https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics">specification</a>
      */
     private void clearDiagnostics(List<File> files) {
-        files.forEach(
-                file ->
-                        server.publishDiagnostics(
-                                new PublishDiagnosticsParams(
-                                        file.toURI().toString(), Collections.emptyList())));
+        for (File file : files) {
+            filesToTypeInfo.remove(file);
+
+            server.publishDiagnostics(
+                    new PublishDiagnosticsParams(file.toURI().toString(), Collections.emptyList()));
+        }
     }
 
     /** Convert raw diagnostics from the compiler to the LSP counterpart. */
@@ -66,6 +91,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 severity = DiagnosticSeverity.Information;
         }
 
+        // Line numbers and column numbers in Diagnostic are 1-based,
+        // while LSP clients use 0-based positions.
         int startLine = (int) diagnostic.getLineNumber() - 1;
         int startCol = (int) diagnostic.getColumnNumber() - 1;
         int endCol = (int) (startCol + diagnostic.getEndPosition() - diagnostic.getStartPosition());
@@ -130,8 +157,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     @Override
     public void didClose(DidCloseTextDocumentParams params) {
         logger.info(params.toString());
-        clearDiagnostics(
-                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        File f = new File(URI.create(params.getTextDocument().getUri()));
+        clearDiagnostics(Collections.singletonList(f));
     }
 
     /**
@@ -146,21 +173,98 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
         logger.info(params.toString());
-        clearDiagnostics(
-                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
-        checkAndPublish(
-                Collections.singletonList(new File(URI.create(params.getTextDocument().getUri()))));
+        File f = new File(URI.create(params.getTextDocument().getUri()));
+        List<File> files = Collections.singletonList(f);
+        clearDiagnostics(files);
+        checkAndPublish(files);
     }
 
     @Override
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
-            server.publishDiagnostics(
-                    new PublishDiagnosticsParams(
-                            entry.getKey(),
-                            entry.getValue().stream()
-                                    .map(this::convertToLSPDiagnostic)
-                                    .collect(Collectors.toList())));
+            List<Diagnostic> diagnostics = new ArrayList<>();
+
+            for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
+                String message = diagnostic.getMessage(Locale.getDefault());
+                if (message != null && message.contains("lsp.type.information")) {
+                    // this message is for lsp support
+                    File file = new File(URI.create(entry.getKey()));
+                    publishTypeMessage(file, message);
+                } else {
+                    diagnostics.add(convertToLSPDiagnostic(diagnostic));
+                }
+            }
+
+            server.publishDiagnostics(new PublishDiagnosticsParams(entry.getKey(), diagnostics));
         }
+    }
+
+    /**
+     * The hover request is sent from the client to the server to request hover information at a
+     * given text document position.
+     *
+     * <p>Registration Options: TextDocumentRegistrationOptions
+     */
+    @Override
+    public CompletableFuture<Hover> hover(HoverParams params) {
+        int line = params.getPosition().getLine();
+        int character = params.getPosition().getCharacter();
+        ComparablePosition currentPosition = new ComparablePosition(line, character);
+        File curFile = new File(URI.create(params.getTextDocument().getUri()));
+        RangeMap<ComparablePosition, List<String>> typeInfo = filesToTypeInfo.get(curFile);
+
+        if (typeInfo != null) {
+            List<String> rawTypeInfoForHover = typeInfo.get(currentPosition);
+            if (rawTypeInfoForHover != null) {
+                List<Either<String, MarkedString>> typeInfoForHover =
+                        rawTypeInfoForHover.stream()
+                                .map(Either::<String, MarkedString>forLeft)
+                                .collect(Collectors.toList());
+                Hover result = new Hover(typeInfoForHover);
+                return CompletableFuture.completedFuture(result);
+            }
+        }
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * Publish the given type message for the given file.
+     *
+     * @param file The file to which the type message corresponds.
+     * @param msg A type message which contains checker name, message kind, type information, and
+     *     the range of this type in the given file, separated by the delimiter ";".
+     */
+    private void publishTypeMessage(File file, String msg) {
+        int lastDelimiter = msg.lastIndexOf(';');
+        String typeInfo = msg.substring(0, lastDelimiter);
+        String positionInfo = msg.substring(lastDelimiter + 1).trim();
+        Matcher rangeMatcher = rangePattern.matcher(positionInfo);
+        if (!rangeMatcher.matches()) {
+            throw new BugInCF("Failed to parse node position!");
+        }
+
+        int startLine = Integer.parseInt(rangeMatcher.group(1));
+        int startCol = Integer.parseInt(rangeMatcher.group(2));
+        int endLine = Integer.parseInt(rangeMatcher.group(3));
+        int endCol = Integer.parseInt(rangeMatcher.group(4));
+
+        ComparablePosition start = new ComparablePosition(startLine, startCol);
+        ComparablePosition end = new ComparablePosition(endLine, endCol);
+
+        RangeMap<ComparablePosition, List<String>> currentTypeInfo = filesToTypeInfo.get(file);
+        if (currentTypeInfo == null) {
+            currentTypeInfo = TreeRangeMap.create();
+            filesToTypeInfo.put(file, currentTypeInfo);
+        }
+
+        List<String> typeInfoForPosition = currentTypeInfo.get(start);
+        if (typeInfoForPosition == null) {
+            typeInfoForPosition = new ArrayList<>();
+        }
+
+        typeInfoForPosition.add(typeInfo);
+        currentTypeInfo.put(
+                com.google.common.collect.Range.closed(start, end), typeInfoForPosition);
     }
 }
