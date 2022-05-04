@@ -34,6 +34,6 @@ shadowJar {
 
 spotless {
     java {
-        googleJavaFormat().aosp()
+        googleJavaFormat('1.15.0').aosp()
     }
 }
