@@ -1,7 +1,7 @@
 # Checker Framework Language Server
 
 This is a language server for the [Checker
-Framework](https://github.com/typetools/checker-framework), which makes the
+Framework](https://github.com/eisop/checker-framework), which makes the
 Checker Framework usable by all editors/IDEs that support the [Language Server
 Protocol](https://microsoft.github.io/language-server-protocol/). It is
 implemented with [LSP4J](https://github.com/eclipse/lsp4j)
