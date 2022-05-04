@@ -1,0 +1,37 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        jdk: [ 11, 17 ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Request Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+        if: github.head_ref != ''
+      - name: Push Checkout
+        uses: actions/checkout@v3
+        if: github.head_ref == ''
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{matrix.jdk}}
+      - name: Github Environment Setup
+        run: |
+          owner=${{ github.repository_owner }}
+          echo "REPO_SITE=${owner}" >> $GITHUB_ENV
+      - name: Build with Gradle
+        run: ./gradlew build --warning-mode all
