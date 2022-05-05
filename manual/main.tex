@@ -403,19 +403,19 @@ The implementation of this program is fairly straightforward; it uses the Github
 API to retrieve the latest releases of the language server and Checker
 Framework, and then downloads the corresponding assets. For example, the API
 used for Checker Framework is
-\url{https://api.github.com/repos/typetools/checker-framework/releases/latest},
+\url{https://api.github.com/repos/eisop/checker-framework/releases/latest},
 and the response is a JSON object:
 
 \begin{lstlisting}
 {
   ...
-  "tag_name": "checker-framework-3.0.1",
-  "name": "Checker Framework 3.0.1",
+  "tag_name": "checker-framework-3.21.4-eisop1",
+  "name": "Checker Framework 3.21.4-eisop1",
   "assets": [
     {
       ...
-      "name": "checker-framework-3.0.1.zip",
-      "browser_download_url": "https://github.com/typetools/checker-framework/releases/download/checker-framework-3.0.1/checker-framework-3.0.1.zip"
+      "name": "checker-framework-3.21.4-eisop1.zip",
+      "browser_download_url": "https://github.com/eisop/checker-framework/releases/download/checker-framework-3.21.4-eisop1/checker-framework-3.21.4-eisop1.zip"
     }
   ]
 }
@@ -432,13 +432,13 @@ starting with ``Got: ". A sample run of this program is:
 
 \begin{lstlisting}
 $ java -jar checker-framework-languageserver-downloader-all.jar \
--dest ~/Downloads -checkerframework_org typetools
+-dest ~/Downloads -checkerframework_org eisop
 Downloading from https://github.com/.../checker-framework-languageserver-0.1.0.jar \
 to /Users/joe/Downloads/checker-framework-languageserver-0.1.0.jar
 Got /Users/joe/Downloads/checker-framework-languageserver-0.1.0.jar
-Downloading from https://github.com/.../checker-framework-3.0.1.zip \
-to /Users/joe/Downloads/checker-framework-3.0.1.zip
-Got /Users/joe/Downloads/checker-framework-3.0.1
+Downloading from https://github.com/.../checker-framework-3.21.4-eisop1.zip \
+to /Users/joe/Downloads/checker-framework-3.21.4-eisop1.zip
+Got /Users/joe/Downloads/checker-framework-3.21.4-eisop1
 \end{lstlisting}
 
 \subsection{VS Code Plugin}
@@ -625,7 +625,7 @@ processing of source files.
   use for Data-flow Analysis. MS thesis. University of Waterloo, 2017.
 
 \bibitem{cfirepo} Checker Framework Inference,
-  \url{https://github.com/typetools/checker-framework-inference}.
+  \url{https://github.com/opprop/checker-framework-inference}.
 
 \end{thebibliography}
 
