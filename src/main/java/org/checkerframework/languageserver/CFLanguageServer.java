@@ -1,8 +1,5 @@
 package org.checkerframework.languageserver;
 
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
@@ -13,6 +10,10 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
+
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 /** The actual language server, responsible for communicating with the client (editor). */
 public class CFLanguageServer implements LanguageServer, LanguageClientAware {

@@ -3,11 +3,13 @@ package org.checkerframework.languageserver;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;

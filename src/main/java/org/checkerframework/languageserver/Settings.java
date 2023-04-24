@@ -1,6 +1,7 @@
 package org.checkerframework.languageserver;
 
 import com.google.gson.annotations.SerializedName;
+
 import java.nio.file.Paths;
 import java.util.List;
 
