@@ -3,6 +3,9 @@ package org.checkerframework.languageserver;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.gson.Gson;
+
+import org.checkerframework.framework.util.CheckerMain;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.checkerframework.framework.util.CheckerMain;
 
 /** Used to run the Checker Framework and collect results. */
 class CheckExecutor {

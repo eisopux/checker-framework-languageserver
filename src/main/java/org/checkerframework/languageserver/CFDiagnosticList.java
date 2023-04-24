@@ -2,6 +2,7 @@ package org.checkerframework.languageserver;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 

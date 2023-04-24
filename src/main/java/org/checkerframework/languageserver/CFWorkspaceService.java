@@ -1,10 +1,12 @@
 package org.checkerframework.languageserver;
 
 import com.google.gson.Gson;
-import java.util.logging.Logger;
+
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
+
+import java.util.logging.Logger;
 
 public class CFWorkspaceService implements WorkspaceService {
 
