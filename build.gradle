@@ -32,6 +32,10 @@ shadowJar {
     }
 }
 
+tasks.compileJava {
+    options.compilerArgs += '-Xlint:deprecation'
+}
+
 spotless {
     java {
         googleJavaFormat().aosp()
