@@ -33,7 +33,7 @@ shadowJar {
 }
 
 tasks.compileJava {
-    options.compilerArgs += ['-Xlint:deprecation', '-Werror']
+    options.compilerArgs += ['-Xlint', '-Werror']
 }
 
 spotless {
