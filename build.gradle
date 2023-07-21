@@ -38,4 +38,11 @@ spotless {
         importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
         formatAnnotations()
     }
+    groovyGradle {
+        target '*.gradle'
+        importOrder()
+        greclipse()  // which formatter Spotless should use to format .gradle files.
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+    }
 }
