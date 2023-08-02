@@ -5,7 +5,6 @@ import com.google.common.collect.TreeRangeMap;
 
 import org.checkerframework.javacutil.BugInCF;
 import org.eclipse.lsp4j.*;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.io.File;
@@ -20,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /** This class does all the dirty works on source files. */
 public class CFTextDocumentService implements TextDocumentService, Publisher {
@@ -203,7 +201,6 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         ComparablePosition currentPosition = new ComparablePosition(line, character);
         File curFile = new File(URI.create(params.getTextDocument().getUri()));
         RangeMap<ComparablePosition, List<String>> typeInfo = filesToTypeInfo.get(curFile);
-
 
         if (typeInfo != null) {
             List<String> rawTypeInfoForHover = typeInfo.get(currentPosition);
