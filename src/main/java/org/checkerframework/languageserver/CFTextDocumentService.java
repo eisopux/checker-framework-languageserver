@@ -4,18 +4,7 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 
 import org.checkerframework.javacutil.BugInCF;
-import org.eclipse.lsp4j.Diagnostic;
-import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.eclipse.lsp4j.DidChangeTextDocumentParams;
-import org.eclipse.lsp4j.DidCloseTextDocumentParams;
-import org.eclipse.lsp4j.DidOpenTextDocumentParams;
-import org.eclipse.lsp4j.DidSaveTextDocumentParams;
-import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.HoverParams;
-import org.eclipse.lsp4j.MarkedString;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.PublishDiagnosticsParams;
-import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
@@ -215,18 +204,17 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         File curFile = new File(URI.create(params.getTextDocument().getUri()));
         RangeMap<ComparablePosition, List<String>> typeInfo = filesToTypeInfo.get(curFile);
 
+
         if (typeInfo != null) {
             List<String> rawTypeInfoForHover = typeInfo.get(currentPosition);
             if (rawTypeInfoForHover != null) {
-                List<Either<String, MarkedString>> typeInfoForHover =
-                        rawTypeInfoForHover.stream()
-                                .map(Either::<String, MarkedString>forLeft)
-                                .collect(Collectors.toList());
+                MarkupContent typeInfoForHover = new MarkupContent();
+                typeInfoForHover.setKind(MarkupKind.PLAINTEXT);
+                typeInfoForHover.setValue(String.join("\n", rawTypeInfoForHover));
                 Hover result = new Hover(typeInfoForHover);
                 return CompletableFuture.completedFuture(result);
             }
         }
-
         return CompletableFuture.completedFuture(null);
     }
 
