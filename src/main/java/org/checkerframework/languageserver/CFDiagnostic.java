@@ -8,7 +8,7 @@ import javax.tools.JavaFileObject;
 /**
  * JSON wrapper to communicate javac diagnostics from {@link JavacWrapper} to {@link CheckExecutor}.
  */
-public class CFDiagnostic implements Diagnostic {
+public class CFDiagnostic implements Diagnostic<Object> {
 
     private final String fileUri;
     private final String kind;

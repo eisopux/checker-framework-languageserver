@@ -32,6 +32,10 @@ shadowJar {
     }
 }
 
+tasks.compileJava {
+    options.compilerArgs += ['-Xlint', '-Werror']
+}
+
 spotless {
     java {
         googleJavaFormat().aosp()

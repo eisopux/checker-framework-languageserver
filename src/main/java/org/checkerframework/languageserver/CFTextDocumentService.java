@@ -12,11 +12,11 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
-import org.eclipse.lsp4j.MarkedString;
+import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.io.File;
@@ -31,7 +31,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /** This class does all the dirty works on source files. */
 public class CFTextDocumentService implements TextDocumentService, Publisher {
@@ -218,15 +217,13 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         if (typeInfo != null) {
             List<String> rawTypeInfoForHover = typeInfo.get(currentPosition);
             if (rawTypeInfoForHover != null) {
-                List<Either<String, MarkedString>> typeInfoForHover =
-                        rawTypeInfoForHover.stream()
-                                .map(Either::<String, MarkedString>forLeft)
-                                .collect(Collectors.toList());
+                MarkupContent typeInfoForHover = new MarkupContent();
+                typeInfoForHover.setKind(MarkupKind.PLAINTEXT);
+                typeInfoForHover.setValue(String.join("\n", rawTypeInfoForHover));
                 Hover result = new Hover(typeInfoForHover);
                 return CompletableFuture.completedFuture(result);
             }
         }
-
         return CompletableFuture.completedFuture(null);
     }
 
