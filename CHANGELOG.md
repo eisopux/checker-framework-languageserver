@@ -1,4 +1,4 @@
-Version 0.2.0 (August 29, 2023)
+Version 0.2.0 (September 1, 2023)
 -------------------------------
 
 Added support for hover notifications with type info.
