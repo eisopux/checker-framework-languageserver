@@ -30,8 +30,10 @@ application {
 }
 
 shadowJar {
+    minimize()
     dependencies {
-        exclude(dependency('org.checkerframework:checker'))
+        // Minimize does not remove the annotated JDK, properties, and astub files
+        exclude(dependency('io.github.eisop:checker'))
     }
 }
 
