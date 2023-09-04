@@ -1,6 +1,5 @@
 package org.checkerframework.languageserver;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 
@@ -191,7 +190,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 if (message != null && message.contains("lsp.type.information")) {
                     // this message is for lsp support
                     File file = new File(URI.create(entry.getKey()));
-//                    message = filterLSPTypeInformation(message);
+                    //                    message = filterLSPTypeInformation(message);
                     publishTypeMessage(file, message);
                 } else {
                     diagnostics.add(convertToLSPDiagnostic(diagnostic));
@@ -297,7 +296,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         Pattern pattern = Pattern.compile("checker=([^;]+)(Checker|Subchecker);(.*)");
         Matcher matcher = pattern.matcher(input);
         if (matcher.find()) {
-            // Extract the value after "checker=" and before "Checker", and append the remaining part of the string
+            // Extract the value after "checker=" and before "Checker", and append the remaining
+            // part of the string
             return matcher.group(1) + ": " + matcher.group(3);
         }
         return input; // return the original input if the pattern is not found
@@ -307,8 +307,9 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         Pattern pattern = Pattern.compile("(.*)type=(.*)");
         Matcher matcher = pattern.matcher(input);
         if (matcher.find()) {
-            // Extract the value before ": type=" and append the "@" symbol and any following characters until a space or end of string
-            return matcher.group(1)  + matcher.group(2);
+            // Extract the value before ": type=" and append the "@" symbol and any following
+            // characters until a space or end of string
+            return matcher.group(1) + matcher.group(2);
         }
         return input; // return the original input if the pattern is not found
     }
