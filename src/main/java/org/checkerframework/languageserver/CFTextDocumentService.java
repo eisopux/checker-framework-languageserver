@@ -1,5 +1,6 @@
 package org.checkerframework.languageserver;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 
@@ -190,6 +191,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 if (message != null && message.contains("lsp.type.information")) {
                     // this message is for lsp support
                     File file = new File(URI.create(entry.getKey()));
+//                    message = filterLSPTypeInformation(message);
                     publishTypeMessage(file, message);
                 } else {
                     diagnostics.add(convertToLSPDiagnostic(diagnostic));
@@ -235,6 +237,10 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      *     the range of this type in the given file, separated by the delimiter ";".
      */
     private void publishTypeMessage(File file, String msg) {
+        msg = filterLSPTypeInformation(msg);
+        msg = filterKindInformation(msg);
+        msg = filterCheckerValue(msg);
+        msg = filterTypeValue(msg);
         int lastDelimiter = msg.lastIndexOf(';');
         String typeInfo = msg.substring(0, lastDelimiter);
         String positionInfo = msg.substring(lastDelimiter + 1).trim();
@@ -265,5 +271,45 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         typeInfoForPosition.add(typeInfo);
         currentTypeInfo.put(
                 com.google.common.collect.Range.closed(start, end), typeInfoForPosition);
+    }
+
+    public String filterLSPTypeInformation(String input) {
+        Pattern pattern = Pattern.compile("\\[lsp.type.information\\] (.*)");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return input;
+    }
+
+    public String filterKindInformation(String input) {
+        // The pattern now matches "kind=USE_TYPE" or "kind=DECLARE_TYPE" anywhere in the string
+        Pattern pattern = Pattern.compile("kind=(USE_TYPE|DECLARED_TYPE); (.*)");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            // Keep the text before "kind=" and append the text after it
+            return input.substring(0, matcher.start()) + matcher.group(2);
+        }
+        return input;
+    }
+
+    public static String filterCheckerValue(String input) {
+        Pattern pattern = Pattern.compile("checker=([^;]+)(Checker|Subchecker);(.*)");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            // Extract the value after "checker=" and before "Checker", and append the remaining part of the string
+            return matcher.group(1) + ": " + matcher.group(3);
+        }
+        return input; // return the original input if the pattern is not found
+    }
+
+    public static String filterTypeValue(String input) {
+        Pattern pattern = Pattern.compile("(.*)type=(.*)");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            // Extract the value before ": type=" and append the "@" symbol and any following characters until a space or end of string
+            return matcher.group(1)  + matcher.group(2);
+        }
+        return input; // return the original input if the pattern is not found
     }
 }
