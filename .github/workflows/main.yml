@@ -36,3 +36,5 @@ jobs:
           echo "REPO_SITE=${owner}" >> $GITHUB_ENV
       - name: Build with Gradle
         run: ./gradlew build --warning-mode all
+      - name: Spotless Check
+        run: ./gradlew spotlessCheck
