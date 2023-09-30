@@ -33,8 +33,11 @@ jobs:
       - name: Github Environment Setup
         run: |
           owner=${{ github.repository_owner }}
-          echo "REPO_SITE=${owner}" >> $GITHUB_ENV
+          echo "REPO_SITE=${owner}" >> $GITHUB_ENV  
       - name: Build with Gradle
-        run: ./gradlew build --warning-mode all
+        run: ./gradlew assemble --warning-mode all
       - name: Spotless Check
-        run: ./gradlew spotlessCheck
+        run: ./gradlew spotlessCheck  
+      - name: Test with Gradle
+        run: ./gradlew test
+
