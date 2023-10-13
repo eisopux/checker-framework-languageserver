@@ -184,21 +184,175 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
             List<Diagnostic> diagnostics = new ArrayList<>();
-
-            for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
-                String message = diagnostic.getMessage(Locale.getDefault());
-                if (message != null && message.contains("lsp.type.information")) {
-                    // this message is for lsp support
-                    File file = new File(URI.create(entry.getKey()));
-                    //                    message = filterLSPTypeInformation(message);
-                    publishTypeMessage(file, message);
-                } else {
-                    diagnostics.add(convertToLSPDiagnostic(diagnostic));
-                }
-            }
-
+            Map<String, List<CheckerTypeKind>> uniqueTypeInfo =
+                    processDiagnosticString(entry, diagnostics);
+            publishTypeMessageWithFilter(entry, uniqueTypeInfo);
             server.publishDiagnostics(new PublishDiagnosticsParams(entry.getKey(), diagnostics));
         }
+    }
+
+    /**
+     * Process Diagnostic strings to separate type message and error message.
+     *
+     * @param entry The Diagnostic entry for getting diagnostic message
+     * @param diagnostics A list for storing checkerframework issued errors
+     * @return TypeMessage processed for non-verbose output
+     */
+    private Map<String, List<CheckerTypeKind>> processDiagnosticString(
+            Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry,
+            List<Diagnostic> diagnostics) {
+        Map<String, List<CheckerTypeKind>> TypeMessage = new HashMap<>();
+        for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
+            String message = diagnostic.getMessage(Locale.getDefault());
+            if (message != null && message.contains("lsp.type.information")) {
+                String checker = getChecker(message);
+                String kind = getKind(message);
+                String type = getType(message) + "; ";
+                String positionInfo = getPosistion(message);
+                if (positionInfo != null) {
+                    if (!TypeMessage.containsKey(positionInfo)) {
+                        List<CheckerTypeKind> checkerTypeKinds = new ArrayList<>();
+                        Map<String, String> kindType = new HashMap<>();
+                        kindType.put(type, kind);
+                        checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
+                        TypeMessage.put(positionInfo, checkerTypeKinds);
+                    } else {
+                        List<CheckerTypeKind> checkerTypeKinds = TypeMessage.get(positionInfo);
+                        boolean foundChecker = false;
+
+                        for (CheckerTypeKind checkerTypeKind : checkerTypeKinds) {
+                            if (checkerTypeKind.getCheckername().equals(checker)) {
+                                foundChecker = true;
+
+                                if (!checkerTypeKind.getTypeKind().containsKey(type)) {
+                                    checkerTypeKind.getTypeKind().put(type, kind);
+                                }
+                                break;
+                            }
+                        }
+                        if (!foundChecker) {
+                            Map<String, String> kindType = new HashMap<>();
+                            kindType.put(type, kind);
+                            checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
+                        }
+                    }
+                }
+            } else {
+                diagnostics.add(convertToLSPDiagnostic(diagnostic));
+            }
+        }
+        return TypeMessage;
+    }
+
+    /**
+     * Publish the given type message for the given file in non-verbose mode.
+     *
+     * @param entry The Diagnostic entry for getting file name string
+     * @param diagnosticString processed for simplicity output
+     */
+    private void publishTypeMessageWithFilter(
+            Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry,
+            Map<String, List<CheckerTypeKind>> diagnosticString) {
+        for (Map.Entry<String, List<CheckerTypeKind>> typeMessage : diagnosticString.entrySet()) {
+            String positionInfo = typeMessage.getKey();
+            for (CheckerTypeKind typeMap : typeMessage.getValue()) {
+                if (typeMap.getTypeKind().entrySet().size() == 1) {
+                    for (Map.Entry<String, String> typeKind : typeMap.getTypeKind().entrySet()) {
+                        StringBuilder typeMessageBuilder = new StringBuilder();
+                        typeMessageBuilder.append(typeMap.getCheckername()).append(": ");
+                        typeMessageBuilder.append(typeKind.getKey());
+                        typeMessageBuilder.append(positionInfo);
+                        String msr = typeMessageBuilder.toString();
+                        File file = new File(URI.create(entry.getKey()));
+                        publishTypeMessage(file, msr);
+                    }
+                } else {
+                    for (Map.Entry<String, String> typeKind : typeMap.getTypeKind().entrySet()) {
+                        StringBuilder typeMessageBuilder = new StringBuilder();
+                        typeMessageBuilder.append(typeMap.getCheckername()).append(" ");
+                        typeMessageBuilder.append(typeKind.getValue()).append(":");
+                        typeMessageBuilder.append(typeKind.getKey());
+                        typeMessageBuilder.append(positionInfo);
+                        String msr = typeMessageBuilder.toString();
+                        File file = new File(URI.create(entry.getKey()));
+                        publishTypeMessage(file, msr);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Return checker name from diagnosticString in checkerframework.
+     *
+     * @param typeMessage Type message string from checkerframework
+     * @return Checker name from checkerframework e.g. Nullness
+     */
+    private static String getChecker(String typeMessage) {
+        String checkerPrefix = "checker=";
+        int checkerStart = typeMessage.indexOf(checkerPrefix);
+        if (checkerStart != -1) {
+            int checkerEnd = typeMessage.indexOf(";", checkerStart);
+            if (checkerEnd != -1) {
+                String checker =
+                        typeMessage
+                                .substring(checkerStart + checkerPrefix.length(), checkerEnd)
+                                .trim();
+                checker = checker.replace("Subchecker", "").replace("Checker", "").trim();
+                return checker;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return Kind from diagnosticString in checkerframework.
+     *
+     * @param typeMessage Type message string from checkerframework
+     * @return Lower case kind from checkerframework e.g. use
+     */
+    private static String getKind(String typeMessage) {
+        String kindPrefix = "kind=";
+        int kindStart = typeMessage.indexOf(kindPrefix);
+        if (kindStart != -1) {
+            int kindEnd = typeMessage.indexOf(";", kindStart);
+            if (kindEnd != -1) {
+                String kind =
+                        typeMessage.substring(kindStart + kindPrefix.length(), kindEnd).trim();
+                kind = kind.toLowerCase(Locale.ROOT).replace("_type", "");
+                return kind;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return Type from diagnosticString in checkerframework.
+     *
+     * @param typeMessage Type Message String from checkerframework
+     * @return Type from checkerframework e.g. @Nullable Object
+     */
+    private static String getType(String typeMessage) {
+        String typePrefix = "type=";
+        int typeStart = typeMessage.indexOf(typePrefix);
+        if (typeStart != -1) {
+            int typeEnd = typeMessage.indexOf(";", typeStart);
+
+            return typeMessage.substring(typeStart + typePrefix.length(), typeEnd).trim();
+        }
+        return null;
+    }
+
+    /**
+     * Return position from diagnosticString in checkerframework.
+     *
+     * @param typeMessage Type Message String from checkerframework
+     * @return Position index from checkerframework e.g. range=(11, 8, 11, 9)
+     */
+    private static String getPosistion(String typeMessage) {
+        int lastDelimiter = typeMessage.lastIndexOf(';');
+        String positionInfo = typeMessage.substring(lastDelimiter + 1).trim();
+        return positionInfo;
     }
 
     /**
@@ -236,10 +390,6 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      *     the range of this type in the given file, separated by the delimiter ";".
      */
     private void publishTypeMessage(File file, String msg) {
-        msg = filterLSPTypeInformation(msg);
-        msg = filterKindInformation(msg);
-        msg = filterCheckerValue(msg);
-        msg = filterTypeValue(msg);
         int lastDelimiter = msg.lastIndexOf(';');
         String typeInfo = msg.substring(0, lastDelimiter);
         String positionInfo = msg.substring(lastDelimiter + 1).trim();
@@ -270,47 +420,5 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         typeInfoForPosition.add(typeInfo);
         currentTypeInfo.put(
                 com.google.common.collect.Range.closed(start, end), typeInfoForPosition);
-    }
-
-    public String filterLSPTypeInformation(String input) {
-        Pattern pattern = Pattern.compile("\\[lsp.type.information\\] (.*)");
-        Matcher matcher = pattern.matcher(input);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return input;
-    }
-
-    public String filterKindInformation(String input) {
-        // The pattern now matches "kind=USE_TYPE" or "kind=DECLARE_TYPE" anywhere in the string
-        Pattern pattern = Pattern.compile("kind=(USE_TYPE|DECLARED_TYPE); (.*)");
-        Matcher matcher = pattern.matcher(input);
-        if (matcher.find()) {
-            // Keep the text before "kind=" and append the text after it
-            return input.substring(0, matcher.start()) + matcher.group(2);
-        }
-        return input;
-    }
-
-    public static String filterCheckerValue(String input) {
-        Pattern pattern = Pattern.compile("checker=([^;]+)(Checker|Subchecker);(.*)");
-        Matcher matcher = pattern.matcher(input);
-        if (matcher.find()) {
-            // Extract the value after "checker=" and before "Checker", and append the remaining
-            // part of the string
-            return matcher.group(1) + ": " + matcher.group(3);
-        }
-        return input; // return the original input if the pattern is not found
-    }
-
-    public static String filterTypeValue(String input) {
-        Pattern pattern = Pattern.compile("(.*)type=(.*)");
-        Matcher matcher = pattern.matcher(input);
-        if (matcher.find()) {
-            // Extract the value before ": type=" and append the "@" symbol and any following
-            // characters until a space or end of string
-            return matcher.group(1) + matcher.group(2);
-        }
-        return input; // return the original input if the pattern is not found
     }
 }
