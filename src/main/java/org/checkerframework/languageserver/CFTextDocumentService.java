@@ -207,8 +207,8 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
             if (message != null && message.contains("lsp.type.information")) {
                 String checker = getChecker(message);
                 String kind = getKind(message);
-                String type = getType(message) + "; ";
-                String positionInfo = getPosistion(message);
+                String type = getType(message);
+                String positionInfo = getPosition(message);
                 if (positionInfo != null) {
                     if (!TypeMessage.containsKey(positionInfo)) {
                         List<CheckerTypeKind> checkerTypeKinds = new ArrayList<>();
@@ -219,11 +219,9 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                     } else {
                         List<CheckerTypeKind> checkerTypeKinds = TypeMessage.get(positionInfo);
                         boolean foundChecker = false;
-
                         for (CheckerTypeKind checkerTypeKind : checkerTypeKinds) {
                             if (checkerTypeKind.getCheckername().equals(checker)) {
                                 foundChecker = true;
-
                                 if (!checkerTypeKind.getTypeKind().containsKey(type)) {
                                     checkerTypeKind.getTypeKind().put(type, kind);
                                 }
@@ -255,27 +253,32 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
             Map<String, List<CheckerTypeKind>> diagnosticString) {
         for (Map.Entry<String, List<CheckerTypeKind>> typeMessage : diagnosticString.entrySet()) {
             String positionInfo = typeMessage.getKey();
-            for (CheckerTypeKind typeMap : typeMessage.getValue()) {
-                if (typeMap.getTypeKind().entrySet().size() == 1) {
-                    for (Map.Entry<String, String> typeKind : typeMap.getTypeKind().entrySet()) {
-                        StringBuilder typeMessageBuilder = new StringBuilder();
-                        typeMessageBuilder.append(typeMap.getCheckername()).append(": ");
-                        typeMessageBuilder.append(typeKind.getKey());
-                        typeMessageBuilder.append(positionInfo);
-                        String msr = typeMessageBuilder.toString();
-                        File file = new File(URI.create(entry.getKey()));
-                        publishTypeMessage(file, msr);
+            for (CheckerTypeKind checkerTypeKind : typeMessage.getValue()) {
+                if (checkerTypeKind.getTypeKind().entrySet().size() == 1) {
+                    for (Map.Entry<String, String> typeKind :
+                            checkerTypeKind.getTypeKind().entrySet()) {
+                        StringBuilder typeMessageBuilder =
+                                new StringBuilder(checkerTypeKind.getCheckername())
+                                        .append(": ")
+                                        .append(typeKind.getKey())
+                                        .append(positionInfo);
+                        publishTypeMessage(
+                                new File(URI.create(entry.getKey())),
+                                typeMessageBuilder.toString());
                     }
                 } else {
-                    for (Map.Entry<String, String> typeKind : typeMap.getTypeKind().entrySet()) {
-                        StringBuilder typeMessageBuilder = new StringBuilder();
-                        typeMessageBuilder.append(typeMap.getCheckername()).append(" ");
-                        typeMessageBuilder.append(typeKind.getValue()).append(":");
-                        typeMessageBuilder.append(typeKind.getKey());
-                        typeMessageBuilder.append(positionInfo);
-                        String msr = typeMessageBuilder.toString();
-                        File file = new File(URI.create(entry.getKey()));
-                        publishTypeMessage(file, msr);
+                    for (Map.Entry<String, String> typeKind :
+                            checkerTypeKind.getTypeKind().entrySet()) {
+                        StringBuilder typeMessageBuilder =
+                                new StringBuilder(checkerTypeKind.getCheckername())
+                                        .append(" ")
+                                        .append(typeKind.getValue())
+                                        .append(":")
+                                        .append(typeKind.getKey())
+                                        .append(positionInfo);
+                        publishTypeMessage(
+                                new File(URI.create(entry.getKey())),
+                                typeMessageBuilder.toString());
                     }
                 }
             }
@@ -283,7 +286,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     /**
-     * Return checker name from diagnosticString in checkerframework.
+     * Get checker name from type message in checkerframework.
      *
      * @param typeMessage Type message string from checkerframework
      * @return Checker name from checkerframework e.g. Nullness
@@ -306,10 +309,10 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     /**
-     * Return Kind from diagnosticString in checkerframework.
+     * Get message kind from type message in checkerframework.
      *
      * @param typeMessage Type message string from checkerframework
-     * @return Lower case kind from checkerframework e.g. use
+     * @return Lower case message kind from checkerframework e.g. use/declared
      */
     private static String getKind(String typeMessage) {
         String kindPrefix = "kind=";
@@ -327,29 +330,28 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     /**
-     * Return Type from diagnosticString in checkerframework.
+     * Get type information from type message in checkerframework.
      *
      * @param typeMessage Type Message String from checkerframework
-     * @return Type from checkerframework e.g. @Nullable Object
+     * @return Type information from checkerframework e.g. @Nullable Object
      */
     private static String getType(String typeMessage) {
         String typePrefix = "type=";
         int typeStart = typeMessage.indexOf(typePrefix);
         if (typeStart != -1) {
             int typeEnd = typeMessage.indexOf(";", typeStart);
-
-            return typeMessage.substring(typeStart + typePrefix.length(), typeEnd).trim();
+            return typeMessage.substring(typeStart + typePrefix.length(), typeEnd).trim() + "; ";
         }
         return null;
     }
 
     /**
-     * Return position from diagnosticString in checkerframework.
+     * Get position range from type message in checkerframework.
      *
      * @param typeMessage Type Message String from checkerframework
-     * @return Position index from checkerframework e.g. range=(11, 8, 11, 9)
+     * @return Position range from checkerframework e.g. range=(11, 8, 11, 9)
      */
-    private static String getPosistion(String typeMessage) {
+    private static String getPosition(String typeMessage) {
         int lastDelimiter = typeMessage.lastIndexOf(';');
         String positionInfo = typeMessage.substring(lastDelimiter + 1).trim();
         return positionInfo;
