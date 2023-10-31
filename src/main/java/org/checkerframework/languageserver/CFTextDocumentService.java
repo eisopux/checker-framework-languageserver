@@ -34,14 +34,17 @@ import java.util.regex.Pattern;
 
 /** This class does all the dirty works on source files. */
 public class CFTextDocumentService implements TextDocumentService, Publisher {
-
+    /** The logger for issuing information in the checker framework document service. */
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
 
-    // Pattern of the range in CF message "lsp.type.information"
+    /** The pattern of the range in CF message "lsp.type.information". */
     private static final Pattern rangePattern =
             Pattern.compile("range=\\((\\d+), (\\d+), (\\d+), (\\d+)\\)");
 
+    /** The checker framework language server. */
     private final CFLanguageServer server;
+
+    /** The checker framework executor. */
     private CheckExecutor executor;
 
     /**
@@ -51,10 +54,12 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     private final Map<File, RangeMap<ComparablePosition, List<String>>> filesToTypeInfo =
             new HashMap<>();
 
+    /** Default constructor for checker framework document service. */
     CFTextDocumentService(CFLanguageServer server) {
         this.server = server;
     }
 
+    /** Setter for the executor field. */
     void setExecutor(CheckExecutor executor) {
         this.executor = executor;
     }

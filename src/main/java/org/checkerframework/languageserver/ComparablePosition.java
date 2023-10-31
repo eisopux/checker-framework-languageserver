@@ -5,9 +5,13 @@ package org.checkerframework.languageserver;
  * the key of a map for indexing and querying positions in files.
  */
 class ComparablePosition implements Comparable<ComparablePosition> {
+    /** The number represent line information. */
     private final int line;
+
+    /** The number represent column information. */
     private final int col;
 
+    /** Default constructor for comparable position. */
     public ComparablePosition(int line, int col) {
         this.line = line;
         this.col = col;

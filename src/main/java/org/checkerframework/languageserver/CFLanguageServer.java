@@ -17,19 +17,28 @@ import java.util.logging.Logger;
 
 /** The actual language server, responsible for communicating with the client (editor). */
 public class CFLanguageServer implements LanguageServer, LanguageClientAware {
-
+    /** The logger for issuing information in the language server. */
     private static final Logger logger = Logger.getLogger(CFLanguageServer.class.getName());
 
-    // used for identifying the source of diagnostics, or field for settings
+    /** The String used for identifying the source of diagnostics, or field for settings. */
     public static final String SERVER_NAME = "checker-framework";
 
+    /** The language client. */
     private LanguageClient client;
+
+    /** The Setting. */
     private Settings settings;
+
+    /** The executor. */
     private final CheckExecutor executor;
 
+    /** The checker framework document service. */
     private final CFTextDocumentService textDocumentService;
+
+    /** The checker framework workspace service. */
     private final CFWorkspaceService workspaceService;
 
+    /** Default constructor for checker framework language server. */
     CFLanguageServer(Settings settings) throws IOException {
         this.settings = settings;
         this.textDocumentService = new CFTextDocumentService(this);
@@ -39,6 +48,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
         this.workspaceService = new CFWorkspaceService(this);
     }
 
+    /** The function for building the executor for checks. */
     private CheckExecutor buildExecutor() throws IOException {
         String checker = settings.getCheckerPath();
         logger.info("Launching CheckExecutor using " + checker);
