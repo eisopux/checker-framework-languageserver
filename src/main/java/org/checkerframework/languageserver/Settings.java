@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import java.nio.file.Paths;
 import java.util.List;
 
-/** Setting class for language server setting and used in {@see CFLanguageServer}. */
+/** Setting class for language server setting and used in {@link CFLanguageServer}. */
 class Settings {
     /** The configuration. */
     @SerializedName(CFLanguageServer.SERVER_NAME)
