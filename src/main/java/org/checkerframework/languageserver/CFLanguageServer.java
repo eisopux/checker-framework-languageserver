@@ -78,6 +78,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
         ServerCapabilities capabilities = new ServerCapabilities();
         capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
         capabilities.setHoverProvider(Boolean.TRUE);
+        capabilities.setCodeActionProvider(Boolean.TRUE);
         return CompletableFuture.completedFuture(new InitializeResult(capabilities));
     }
 

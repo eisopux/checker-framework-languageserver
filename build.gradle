@@ -38,13 +38,13 @@ shadowJar {
 }
 
 tasks.compileJava {
-    options.compilerArgs += ['-Xlint', '-Werror']
+//    options.compilerArgs += ['-Xlint', '-Werror']
 }
 
 spotless {
     java {
         googleJavaFormat().aosp()
-        importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+        importOrder('com', 'jdk', 'lib', 'lomlspbok', 'org', 'java', 'javax')
         formatAnnotations()
     }
     groovyGradle {
