@@ -9,7 +9,7 @@ import javax.tools.JavaFileObject;
  * JSON wrapper to communicate javac diagnostics from {@link JavacWrapper} to {@link CheckExecutor}.
  */
 public class CFDiagnostic implements Diagnostic<Object> {
-    /** The file uri. */
+    /** The file URI. */
     private final String fileUri;
 
     /** The diagnostics kind. */
@@ -36,7 +36,7 @@ public class CFDiagnostic implements Diagnostic<Object> {
     /** The diagnostic message indicating the type of diagnostic. */
     private final String message;
 
-    /** Default constructor for checker framework diagnostic. */
+    /** Default constructor for CFDiagnostic. */
     CFDiagnostic(Diagnostic<? extends JavaFileObject> diagnostic) {
         fileUri = diagnostic.getSource().toUri().toString();
         kind = diagnostic.getKind().name();

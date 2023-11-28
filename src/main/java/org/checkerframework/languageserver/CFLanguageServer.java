@@ -26,7 +26,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     /** The language client. */
     private LanguageClient client;
 
-    /** The Setting. */
+    /** The settings instance. */
     private Settings settings;
 
     /** The executor. */
