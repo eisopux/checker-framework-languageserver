@@ -29,16 +29,16 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     /** The settings instance. */
     private Settings settings;
 
-    /** The executor. */
+    /** The Checker Framework executor. */
     private final CheckExecutor executor;
 
-    /** The checker framework document service. */
+    /** The Checker Framework document service. */
     private final CFTextDocumentService textDocumentService;
 
-    /** The checker framework workspace service. */
+    /** The Checker Framework workspace service. */
     private final CFWorkspaceService workspaceService;
 
-    /** Default constructor for checker framework language server. */
+    /** Default constructor for Checker Framework language server. */
     CFLanguageServer(Settings settings) throws IOException {
         this.settings = settings;
         this.textDocumentService = new CFTextDocumentService(this);

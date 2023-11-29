@@ -12,10 +12,13 @@ public class CFDiagnostic implements Diagnostic<Object> {
     /** The file URI. */
     private final String fileUri;
 
-    /** The diagnostics kind. */
+    /** The diagnostics kind. It is one of value in {@link Kind} enum. */
     private final String kind;
 
-    /** The diagnostics position. */
+    /**
+     * The diagnostics position. The position, startPosition, and endPosition satisfies the
+     * conditions getStartPosition() <= getPosition() <= getEndPosition().
+     */
     private final long position;
 
     /** The diagnostics start position. */
@@ -24,16 +27,16 @@ public class CFDiagnostic implements Diagnostic<Object> {
     /** The diagnostics end position. */
     private final long endPosition;
 
-    /** The number represent line information. */
+    /** The line number. */
     private final long lineNumber;
 
-    /** The number represent column information. */
+    /** The column number. */
     private final long columnNumber;
 
-    /** The diagnostic code indicating the type of diagnostic. */
+    /** The code indicating the type of diagnostic. */
     private final String code;
 
-    /** The diagnostic message indicating the type of diagnostic. */
+    /** The message for the given locale. */
     private final String message;
 
     /** Default constructor for CFDiagnostic. */

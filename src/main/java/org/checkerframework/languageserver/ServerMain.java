@@ -19,13 +19,22 @@ public class ServerMain {
     /** The logger for issuing information in the launcher of the language server. */
     private static final Logger logger = Logger.getLogger(ServerMain.class.getName());
 
-    /** The framework path and field is option in the client side. */
+    /**
+     * Path to the framework. This is a configurable option for the language server on the client
+     * side.
+     */
     private static final String OPT_FRAMEWORKPATH = "frameworkPath";
 
-    /** The check name and field is option in the client side. */
+    /**
+     * Name of the checker. This is a configurable option for the language server on the client
+     * side.
+     */
     private static final String OPT_CHECKERS = "checkers";
 
-    /** The command line options and field is option in the client side. */
+    /**
+     * Command-line options for the language server. This is a configurable option on the client
+     * side.
+     */
     private static final String OPT_COMMANDLINEOPTIONS = "commandLineOptions";
 
     /**

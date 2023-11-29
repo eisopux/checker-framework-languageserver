@@ -30,7 +30,7 @@ import javax.tools.ToolProvider;
  * to start up a new process.
  */
 public class JavacWrapper {
-    /** The options passed for Java compiler. */
+    /** The options passed to the Java compiler. */
     private final List<String> options;
 
     /** The Java compiler. */
@@ -68,9 +68,10 @@ public class JavacWrapper {
     }
 
     /**
-     * Compile function for compile single java file.
+     * Compiles a single Java file. This method takes the path of a Java file, compiles it, and
+     * outputs the compilation diagnostics.
      *
-     * @param f The String for target Java file
+     * @param f The path of the Java file to be compiled.
      */
     private void compile(String f) {
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();

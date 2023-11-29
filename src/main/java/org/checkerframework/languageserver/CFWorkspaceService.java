@@ -10,16 +10,16 @@ import java.util.logging.Logger;
 
 /** This class is for workspace service and used in {@link CFLanguageServer}. */
 public class CFWorkspaceService implements WorkspaceService {
-    /** The logger for checker framework workspace service. */
+    /** The logger for Checker Framework workspace service. */
     private static final Logger logger = Logger.getLogger(CFWorkspaceService.class.getName());
 
-    /** The checker framework language server for workspace service. */
+    /** The Checker Framework language server for workspace service. */
     private final CFLanguageServer server;
 
-    /** The gson for checker framework workspace service. */
+    /** The gson for Checker Framework workspace service. */
     private final Gson gson;
 
-    /** Default constructor for checker framework workspace service. */
+    /** Default constructor for Checker Framework workspace service. */
     CFWorkspaceService(CFLanguageServer server) {
         this.server = server;
         this.gson = new Gson();
