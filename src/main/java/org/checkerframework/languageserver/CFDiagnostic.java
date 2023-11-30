@@ -33,7 +33,9 @@ public class CFDiagnostic implements Diagnostic<Object> {
     /** The column number. */
     private final long columnNumber;
 
-    /** The code indicating the type of diagnostic. */
+    /**
+     * The code indicating the type of diagnostic e.g. dereference.of.nullable for nullness checker.
+     */
     private final String code;
 
     /** The message for the given locale. */
