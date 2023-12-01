@@ -20,7 +20,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
     /** The logger for issuing information in the language server. */
     private static final Logger logger = Logger.getLogger(CFLanguageServer.class.getName());
 
-    /** The String used for identifying the source of diagnostics. */
+    /** Name of the server and settings block. */
     public static final String SERVER_NAME = "checker-framework";
 
     /** The language client. */
