@@ -37,7 +37,20 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     /** The logger for issuing information in the Checker Framework document service. */
     private static final Logger logger = Logger.getLogger(CFTextDocumentService.class.getName());
 
-    /** The pattern of the range in CF message "lsp.type.information". */
+    /**
+     * The pattern of the range in CF message "lsp.type.information".
+     *
+     * <p>See the corresponding Checker Framework changes:
+     *
+     * <ul>
+     *   <li><a
+     *       href="https://github.com/eisop/checker-framework/blob/3ed0c114c3d686eadc803207640487e86d1d086e/framework/src/main/java/org/checkerframework/framework/source/messages.properties#L3">
+     *       messages.properties - Line 3</a>
+     *   <li><a
+     *       href="https://github.com/eisop/checker-framework/blob/3ed0c114c3d686eadc803207640487e86d1d086e/framework/src/main/java/org/checkerframework/framework/util/TypeInformationPresenter.java#L138">
+     *       TypeInformationPresenter.java - Line 138</a>
+     * </ul>
+     */
     private static final Pattern rangePattern =
             Pattern.compile("range=\\((\\d+), (\\d+), (\\d+), (\\d+)\\)");
 
