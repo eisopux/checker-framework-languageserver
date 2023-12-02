@@ -40,15 +40,15 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     /**
      * The pattern of the range in CF message "lsp.type.information".
      *
-     * <p>See the corresponding Checker Framework changes:
+     * <p>See the corresponding Checker Framework code:
      *
      * <ul>
      *   <li><a
      *       href="https://github.com/eisop/checker-framework/blob/3ed0c114c3d686eadc803207640487e86d1d086e/framework/src/main/java/org/checkerframework/framework/source/messages.properties#L3">
-     *       messages.properties - Line 3</a>
+     *       messages.properties</a>
      *   <li><a
      *       href="https://github.com/eisop/checker-framework/blob/3ed0c114c3d686eadc803207640487e86d1d086e/framework/src/main/java/org/checkerframework/framework/util/TypeInformationPresenter.java#L138">
-     *       TypeInformationPresenter.java - Line 138</a>
+     *       TypeInformationPresenter.java</a>
      * </ul>
      */
     private static final Pattern rangePattern =
