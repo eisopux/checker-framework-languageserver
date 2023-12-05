@@ -513,13 +513,15 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         try {
             URI uriObject = new URI(uri);
             String filePath = Paths.get(uriObject).toFile().getAbsolutePath();
-            String fileContent = new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
+            String fileContent =
+                    new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
             int startLine = range.getStart().getLine();
             int startCharacter = range.getStart().getCharacter();
             int endLine = range.getEnd().getLine();
             int endCharacter = range.getEnd().getCharacter();
 
-            List<String> lines = Splitter.onPattern(System.lineSeparator()).splitToList(fileContent);
+            List<String> lines =
+                    Splitter.onPattern(System.lineSeparator()).splitToList(fileContent);
 
             StringBuilder textInRange = new StringBuilder();
             for (int i = startLine; i <= endLine; i++) {
