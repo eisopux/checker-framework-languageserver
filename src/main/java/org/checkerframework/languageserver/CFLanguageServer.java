@@ -17,19 +17,28 @@ import java.util.logging.Logger;
 
 /** The actual language server, responsible for communicating with the client (editor). */
 public class CFLanguageServer implements LanguageServer, LanguageClientAware {
-
+    /** The logger for issuing information in the language server. */
     private static final Logger logger = Logger.getLogger(CFLanguageServer.class.getName());
 
-    // used for identifying the source of diagnostics, or field for settings
+    /** Name of the server and settings block. */
     public static final String SERVER_NAME = "checker-framework";
 
+    /** The language client. */
     private LanguageClient client;
+
+    /** The settings instance. */
     private Settings settings;
+
+    /** The Checker Framework executor. */
     private final CheckExecutor executor;
 
+    /** The Checker Framework document service. */
     private final CFTextDocumentService textDocumentService;
+
+    /** The Checker Framework workspace service. */
     private final CFWorkspaceService workspaceService;
 
+    /** Default constructor for Checker Framework language server. */
     CFLanguageServer(Settings settings) throws IOException {
         this.settings = settings;
         this.textDocumentService = new CFTextDocumentService(this);
@@ -39,6 +48,7 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
         this.workspaceService = new CFWorkspaceService(this);
     }
 
+    /** The function for building the executor for checks. */
     private CheckExecutor buildExecutor() throws IOException {
         String checker = settings.getCheckerPath();
         logger.info("Launching CheckExecutor using " + checker);
@@ -59,14 +69,14 @@ public class CFLanguageServer implements LanguageServer, LanguageClientAware {
      * The initialize request is sent as the first request from the client to the server.
      *
      * <p>If the server receives request or notification before the initialize request it should act
-     * as follows: - for a request the respond should be errored with code: -32001. The message can
+     * as follows: - for a request the response should be errored with code: -32001. The message can
      * be picked by the server. - notifications should be dropped, except for the exit notification.
      * This will allow the exit a server without an initialize request.
      *
      * <p>Until the server has responded to the initialize request with an InitializeResult the
-     * client must not sent any additional requests or notifications to the server.
+     * client must not send any additional requests or notifications to the server.
      *
-     * <p>During the initialize request the server is allowed to sent the notifications
+     * <p>During the initialize request the server is allowed to send the notifications
      * window/showMessage, window/logMessage and telemetry/event as well as the
      * window/showMessageRequest request to the client.
      *

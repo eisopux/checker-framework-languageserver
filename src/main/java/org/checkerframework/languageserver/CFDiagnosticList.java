@@ -10,9 +10,10 @@ import javax.tools.JavaFileObject;
  * JSON wrapper to communicate javac diagnostics from {@link JavacWrapper} to {@link CheckExecutor}.
  */
 public class CFDiagnosticList {
-
+    /** The diagnostics. */
     private final List<CFDiagnostic> diags;
 
+    /** Default constructor for CFDiagnosticList. */
     public CFDiagnosticList(List<Diagnostic<? extends JavaFileObject>> diagnostics) {
         diags = new ArrayList<>(diagnostics.size());
         for (Diagnostic<? extends JavaFileObject> d : diagnostics) {
@@ -20,6 +21,7 @@ public class CFDiagnosticList {
         }
     }
 
+    /** Getter for the list of diagnostics. */
     public List<CFDiagnostic> getDiagnostics() {
         return diags;
     }
