@@ -30,12 +30,23 @@ import javax.tools.ToolProvider;
  * to start up a new process.
  */
 public class JavacWrapper {
-
+    /** The options passed to the Java compiler. */
     private final List<String> options;
+
+    /** The Java compiler. */
     private final JavaCompiler javac;
+
+    /** The Java file manager. */
     private final StandardJavaFileManager fileManager;
+
+    /** The gson for Javac wrapper. */
     private final Gson gson;
 
+    /**
+     * The entry point of the Java wrapper for the language server.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         JavacWrapper javacw = new JavacWrapper(args);
         Scanner input = new Scanner(System.in, UTF_8.name());
@@ -45,6 +56,7 @@ public class JavacWrapper {
         }
     }
 
+    /** Default constructor for Javac wrapper class. */
     private JavacWrapper(String[] args) {
         options = new ArrayList<>();
         options.addAll(Arrays.asList(args));
@@ -55,6 +67,12 @@ public class JavacWrapper {
         // gson = new GsonBuilder().setPrettyPrinting().create();
     }
 
+    /**
+     * Compiles a single Java file. This method takes the path of a Java file, compiles it, and
+     * outputs the compilation diagnostics.
+     *
+     * @param f The path of the Java file to be compiled.
+     */
     private void compile(String f) {
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         Iterable<? extends JavaFileObject> javaFiles =

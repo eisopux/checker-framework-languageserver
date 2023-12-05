@@ -16,11 +16,25 @@ import java.util.logging.Logger;
 
 /** This class is the launcher of the language server. */
 public class ServerMain {
-
+    /** The logger for issuing information in the launcher of the language server. */
     private static final Logger logger = Logger.getLogger(ServerMain.class.getName());
 
+    /**
+     * Path to the framework. This is a configurable option for the language server on the client
+     * side.
+     */
     private static final String OPT_FRAMEWORKPATH = "frameworkPath";
+
+    /**
+     * Name of the checker. This is a configurable option for the language server on the client
+     * side.
+     */
     private static final String OPT_CHECKERS = "checkers";
+
+    /**
+     * Command-line options for the language server. This is a configurable option on the client
+     * side.
+     */
     private static final String OPT_COMMANDLINEOPTIONS = "commandLineOptions";
 
     /**
@@ -48,6 +62,11 @@ public class ServerMain {
         }
     }
 
+    /**
+     * This function returns the options passed to the language server.
+     *
+     * @return options passed to the language server
+     */
     private static Options getOptions() {
         Options options = new Options();
         options.addRequiredOption(
@@ -65,6 +84,12 @@ public class ServerMain {
         return options;
     }
 
+    /**
+     * This function returns the settings passed to the language server.
+     *
+     * @param args the input arguments
+     * @return settings of language server
+     */
     private static Settings getSettings(String[] args) throws ParseException {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(getOptions(), args);

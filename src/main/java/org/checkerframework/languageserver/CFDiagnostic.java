@@ -9,17 +9,39 @@ import javax.tools.JavaFileObject;
  * JSON wrapper to communicate javac diagnostics from {@link JavacWrapper} to {@link CheckExecutor}.
  */
 public class CFDiagnostic implements Diagnostic<Object> {
-
+    /** The file URI. */
     private final String fileUri;
+
+    /** The diagnostics kind. It is one of value in {@link Kind} enum. */
     private final String kind;
+
+    /**
+     * The diagnostics position. The position, startPosition, and endPosition satisfies the
+     * conditions getStartPosition() <= getPosition() <= getEndPosition().
+     */
     private final long position;
+
+    /** The diagnostics start position. */
     private final long startPosition;
+
+    /** The diagnostics end position. */
     private final long endPosition;
+
+    /** The line number. */
     private final long lineNumber;
+
+    /** The column number. */
     private final long columnNumber;
+
+    /**
+     * The code indicating the type of diagnostic e.g. dereference.of.nullable for nullness checker.
+     */
     private final String code;
+
+    /** The message for the given locale. */
     private final String message;
 
+    /** Default constructor for CFDiagnostic. */
     CFDiagnostic(Diagnostic<? extends JavaFileObject> diagnostic) {
         fileUri = diagnostic.getSource().toUri().toString();
         kind = diagnostic.getKind().name();

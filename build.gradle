@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id 'com.diffplug.spotless' version '6.23.0'
+    id 'com.diffplug.spotless' version '6.23.3'
     id 'net.ltgt.errorprone' version '3.1.0'
 }
 
@@ -13,8 +13,12 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    requireJavadoc
+}
+
 dependencies {
-    implementation 'io.github.eisop:checker:3.40.0-eisop2'
+    implementation 'io.github.eisop:checker:3.41.0-eisop1'
     implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.21.1'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'commons-cli:commons-cli:1.6.0'
@@ -22,6 +26,14 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     errorprone('com.google.errorprone:error_prone_core:2.23.0')
     errorproneJavac('com.google.errorprone:javac:9+181-r4173-1')
+    requireJavadoc('org.plumelib:require-javadoc:1.0.6')
+}
+
+task requireJavadoc(type: JavaExec, group: 'Documentation') {
+    description = 'Ensures that Javadoc documentation exists in source code.'
+    mainClass = 'org.plumelib.javadoc.RequireJavadoc'
+    classpath = configurations.requireJavadoc
+    args 'src/main/java'
 }
 
 application {

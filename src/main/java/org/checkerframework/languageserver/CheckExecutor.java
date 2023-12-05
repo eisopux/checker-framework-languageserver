@@ -21,14 +21,22 @@ import java.util.logging.Logger;
 
 /** Used to run the Checker Framework and collect results. */
 class CheckExecutor {
-
+    /** The logger class for issuing information and warnings. */
     private static final Logger logger = Logger.getLogger(CheckExecutor.class.getName());
 
+    /** The publisher class for publish result. */
     private final Publisher publisher;
+
+    /** The options for java compiler. */
     private final List<String> options;
+
+    /** The gson class for convert Json to diagnostics. */
     private final Gson gson;
+
+    /** The Process class for run the checks. */
     private final Process wrapper;
 
+    /** Default constructor for check executor. */
     CheckExecutor(
             Publisher publisher,
             String jdkPath,
@@ -114,8 +122,10 @@ class CheckExecutor {
         }
     }
 
-    // This class runs in the background in a thread and receives the output of JavacWrapper.
-    // Diagnostics received by it will then be sent to the editor.
+    /**
+     * This class runs in the background in a thread and receives the output of JavacWrapper.
+     * Diagnostics received by it will then be sent to the editor.
+     */
     private class Receiver implements Runnable {
         @Override
         public void run() {
