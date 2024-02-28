@@ -5,13 +5,13 @@ import java.util.Map;
 /** This class is for storing the type information from Checker Framework. */
 public class CheckerTypeKind {
     /** The string stores checker name e.g. Nullness, KeyFor. */
-    private String checkerName;
+    private final String checkerName;
 
     /**
      * The map stores type information in the key of the map and type kind information e.g.
      * used/declared in the value of the map.
      */
-    private Map<String, String> typeToKindMap;
+    private final Map<String, String> typeToKindMap;
 
     /**
      * Constructor for creating the CheckerTypeKind class
@@ -35,6 +35,7 @@ public class CheckerTypeKind {
 
     /**
      * Return the type and kind map
+     *
      * @return type and kind map
      */
     Map<String, String> getTypeToKindMap() {

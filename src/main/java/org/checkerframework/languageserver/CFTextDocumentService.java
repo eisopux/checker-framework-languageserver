@@ -227,21 +227,23 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                 String kind = getKind(message);
                 String type = getType(message);
                 String positionInfo = getPosition(message);
-                if (positionInfo != null) {
-                    // If the position is not in the map, add a new entry.
-                    List<CheckerTypeKind> checkerTypeKinds = TypeMessage.computeIfAbsent(positionInfo, k -> new ArrayList<>());
-                    // If the checker is not in the list, add a new entry.
-                    CheckerTypeKind checkerTypeKind = checkerTypeKinds.stream()
-                            .filter(c -> c.getCheckername().equals(checker))
-                            .findFirst()
-                            .orElseGet(() -> {
-                                CheckerTypeKind newCheckerTypeKind = new CheckerTypeKind(checker, new HashMap<>());
-                                checkerTypeKinds.add(newCheckerTypeKind);
-                                return newCheckerTypeKind;
-                            });
-                    // If the type is not in the map, add a new entry.
-                    checkerTypeKind.getTypeToKindMap().putIfAbsent(type, kind);
-                }
+                // If the position is not in the map, add a new entry.
+                List<CheckerTypeKind> checkerTypeKinds =
+                        TypeMessage.computeIfAbsent(positionInfo, k -> new ArrayList<>());
+                // If the checker is not in the list, add a new entry.
+                CheckerTypeKind checkerTypeKind =
+                        checkerTypeKinds.stream()
+                                .filter(c -> c.getCheckername().equals(checker))
+                                .findFirst()
+                                .orElseGet(
+                                        () -> {
+                                            CheckerTypeKind newCheckerTypeKind =
+                                                    new CheckerTypeKind(checker, new HashMap<>());
+                                            checkerTypeKinds.add(newCheckerTypeKind);
+                                            return newCheckerTypeKind;
+                                        });
+                // If the type is not in the map, add a new entry.
+                checkerTypeKind.getTypeToKindMap().putIfAbsent(type, kind);
             } else {
                 // If is not type message, add to diagnostics.
                 diagnostics.add(convertToLSPDiagnostic(diagnostic));
@@ -249,49 +251,51 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         }
         return TypeMessage;
     }
-//    private Map<String, List<CheckerTypeKind>> processDiagnosticString(
-//            Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry,
-//            List<Diagnostic> diagnostics) {
-//        Map<String, List<CheckerTypeKind>> TypeMessage = new HashMap<>();
-//        for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
-//            String message = diagnostic.getMessage(Locale.getDefault());
-//            if (message != null && message.contains("lsp.type.information")) {
-//                String checker = getChecker(message);
-//                String kind = getKind(message);
-//                String type = getType(message);
-//                String positionInfo = getPosition(message);
-//                if (positionInfo != null) {
-//                    if (!TypeMessage.containsKey(positionInfo)) {
-//                        List<CheckerTypeKind> checkerTypeKinds = new ArrayList<>();
-//                        Map<String, String> kindType = new HashMap<>();
-//                        kindType.put(type, kind);
-//                        checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
-//                        TypeMessage.put(positionInfo, checkerTypeKinds);
-//                    } else {
-//                        List<CheckerTypeKind> checkerTypeKinds = TypeMessage.get(positionInfo);
-//                        boolean foundChecker = false;
-//                        for (CheckerTypeKind checkerTypeKind : checkerTypeKinds) {
-//                            if (checkerTypeKind.getCheckername().equals(checker)) {
-//                                foundChecker = true;
-//                                if (!checkerTypeKind.getTypeToKindMap().containsKey(type)) {
-//                                    checkerTypeKind.getTypeToKindMap().put(type, kind);
-//                                }
-//                                break;
-//                            }
-//                        }
-//                        if (!foundChecker) {
-//                            Map<String, String> kindType = new HashMap<>();
-//                            kindType.put(type, kind);
-//                            checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
-//                        }
-//                    }
-//                }
-//            } else {
-//                diagnostics.add(convertToLSPDiagnostic(diagnostic));
-//            }
-//        }
-//        return TypeMessage;
-//    }
+
+    //    private Map<String, List<CheckerTypeKind>> processDiagnosticString(
+    //            Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry,
+    //            List<Diagnostic> diagnostics) {
+    //        Map<String, List<CheckerTypeKind>> TypeMessage = new HashMap<>();
+    //        for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
+    //            String message = diagnostic.getMessage(Locale.getDefault());
+    //            if (message != null && message.contains("lsp.type.information")) {
+    //                String checker = getChecker(message);
+    //                String kind = getKind(message);
+    //                String type = getType(message);
+    //                String positionInfo = getPosition(message);
+    //                if (positionInfo != null) {
+    //                    if (!TypeMessage.containsKey(positionInfo)) {
+    //                        List<CheckerTypeKind> checkerTypeKinds = new ArrayList<>();
+    //                        Map<String, String> kindType = new HashMap<>();
+    //                        kindType.put(type, kind);
+    //                        checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
+    //                        TypeMessage.put(positionInfo, checkerTypeKinds);
+    //                    } else {
+    //                        List<CheckerTypeKind> checkerTypeKinds =
+    // TypeMessage.get(positionInfo);
+    //                        boolean foundChecker = false;
+    //                        for (CheckerTypeKind checkerTypeKind : checkerTypeKinds) {
+    //                            if (checkerTypeKind.getCheckername().equals(checker)) {
+    //                                foundChecker = true;
+    //                                if (!checkerTypeKind.getTypeToKindMap().containsKey(type)) {
+    //                                    checkerTypeKind.getTypeToKindMap().put(type, kind);
+    //                                }
+    //                                break;
+    //                            }
+    //                        }
+    //                        if (!foundChecker) {
+    //                            Map<String, String> kindType = new HashMap<>();
+    //                            kindType.put(type, kind);
+    //                            checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
+    //                        }
+    //                    }
+    //                }
+    //            } else {
+    //                diagnostics.add(convertToLSPDiagnostic(diagnostic));
+    //            }
+    //        }
+    //        return TypeMessage;
+    //    }
 
     /**
      * Publish the given type message for the given file in non-verbose mode.
@@ -390,8 +394,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
      */
     private static String getPosition(String typeMessage) {
         int lastDelimiter = typeMessage.lastIndexOf(';');
-        String positionInfo = typeMessage.substring(lastDelimiter + 1).trim();
-        return positionInfo;
+        return typeMessage.substring(lastDelimiter + 1).trim();
     }
 
     /**
