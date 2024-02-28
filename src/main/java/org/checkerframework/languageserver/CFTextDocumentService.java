@@ -1,14 +1,9 @@
 package org.checkerframework.languageserver;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 
 import org.checkerframework.javacutil.BugInCF;
-import org.eclipse.lsp4j.CodeAction;
-import org.eclipse.lsp4j.CodeActionKind;
-import org.eclipse.lsp4j.CodeActionParams;
-import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
@@ -22,18 +17,10 @@ import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextEdit;
-import org.eclipse.lsp4j.WorkspaceEdit;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -453,100 +440,5 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         typeInfoForPosition.add(typeInfo);
         currentTypeInfo.put(
                 com.google.common.collect.Range.closed(start, end), typeInfoForPosition);
-    }
-
-    @Override
-    public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(
-            CodeActionParams params) {
-        List<Either<Command, CodeAction>> actions = new ArrayList<>();
-        for (Diagnostic diagnostic : params.getContext().getDiagnostics()) {
-            if (!diagnostic.getMessage().contains("lsp.type.information")) {
-                if (diagnostic.getMessage().contains("dereference.of.nullable")) {
-                    CodeAction codeAction = new CodeAction("Add nullcheck");
-                    codeAction.setKind(CodeActionKind.QuickFix);
-                    String uri = params.getTextDocument().getUri();
-                    Range range = params.getRange();
-                    String str = getContentInRange(uri, range);
-                    List<TextEdit> editList = new ArrayList<>();
-                    TextEdit edit1 =
-                            new TextEdit(
-                                    new Range(
-                                            new Position(
-                                                    params.getRange().getStart().getLine(),
-                                                    params.getRange().getStart().getCharacter()),
-                                            new Position(
-                                                    params.getRange().getEnd().getLine(),
-                                                    params.getRange().getEnd().getCharacter())),
-                                    " if ("
-                                            + str
-                                            + " != null) {\n"
-                                            + "            "
-                                            + str
-                                            + ".toString();\n");
-                    TextEdit edit2 =
-                            new TextEdit(
-                                    new Range(
-                                            new Position(
-                                                    params.getRange().getStart().getLine() + 1,
-                                                    params.getRange().getStart().getCharacter()),
-                                            new Position(
-                                                    params.getRange().getEnd().getLine(),
-                                                    params.getRange().getEnd().getCharacter())),
-                                    "        } else {\n"
-                                            + "        //TODO: Implement if the variable is null\n"
-                                            + "        }\n"
-                                            + "     }");
-                    editList.add(edit1);
-                    editList.add(edit2);
-                    codeAction.setEdit(new WorkspaceEdit(Collections.singletonMap(uri, editList)));
-                    codeAction.setDiagnostics(Collections.singletonList(diagnostic));
-                    actions.add(Either.forRight(codeAction));
-                }
-            } else {
-                break;
-            }
-        }
-        return CompletableFuture.completedFuture(actions);
-    }
-
-    private static String getContentInRange(String uri, Range range) {
-        try {
-            URI uriObject = new URI(uri);
-            String filePath = Paths.get(uriObject).toFile().getAbsolutePath();
-            String fileContent =
-                    new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
-            int startLine = range.getStart().getLine();
-            int startCharacter = range.getStart().getCharacter();
-            int endLine = range.getEnd().getLine();
-            int endCharacter = range.getEnd().getCharacter();
-
-            List<String> lines =
-                    Splitter.onPattern(System.lineSeparator()).splitToList(fileContent);
-
-            StringBuilder textInRange = new StringBuilder();
-            for (int i = startLine; i <= endLine; i++) {
-                String line = lines.get(i);
-                if (i == startLine) {
-                    if (i == endLine) {
-                        textInRange.append(line.substring(startCharacter, endCharacter));
-                    } else {
-                        textInRange.append(line.substring(startCharacter));
-                        textInRange.append(System.lineSeparator());
-                    }
-                } else if (i == endLine) {
-                    textInRange.append(line.substring(0, endCharacter));
-                } else {
-                    textInRange.append(line);
-                    textInRange.append(System.lineSeparator());
-                }
-            }
-
-            return textInRange.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "";
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
