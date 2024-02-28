@@ -252,51 +252,6 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         return TypeMessage;
     }
 
-    //    private Map<String, List<CheckerTypeKind>> processDiagnosticString(
-    //            Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry,
-    //            List<Diagnostic> diagnostics) {
-    //        Map<String, List<CheckerTypeKind>> TypeMessage = new HashMap<>();
-    //        for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
-    //            String message = diagnostic.getMessage(Locale.getDefault());
-    //            if (message != null && message.contains("lsp.type.information")) {
-    //                String checker = getChecker(message);
-    //                String kind = getKind(message);
-    //                String type = getType(message);
-    //                String positionInfo = getPosition(message);
-    //                if (positionInfo != null) {
-    //                    if (!TypeMessage.containsKey(positionInfo)) {
-    //                        List<CheckerTypeKind> checkerTypeKinds = new ArrayList<>();
-    //                        Map<String, String> kindType = new HashMap<>();
-    //                        kindType.put(type, kind);
-    //                        checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
-    //                        TypeMessage.put(positionInfo, checkerTypeKinds);
-    //                    } else {
-    //                        List<CheckerTypeKind> checkerTypeKinds =
-    // TypeMessage.get(positionInfo);
-    //                        boolean foundChecker = false;
-    //                        for (CheckerTypeKind checkerTypeKind : checkerTypeKinds) {
-    //                            if (checkerTypeKind.getCheckername().equals(checker)) {
-    //                                foundChecker = true;
-    //                                if (!checkerTypeKind.getTypeToKindMap().containsKey(type)) {
-    //                                    checkerTypeKind.getTypeToKindMap().put(type, kind);
-    //                                }
-    //                                break;
-    //                            }
-    //                        }
-    //                        if (!foundChecker) {
-    //                            Map<String, String> kindType = new HashMap<>();
-    //                            kindType.put(type, kind);
-    //                            checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
-    //                        }
-    //                    }
-    //                }
-    //            } else {
-    //                diagnostics.add(convertToLSPDiagnostic(diagnostic));
-    //            }
-    //        }
-    //        return TypeMessage;
-    //    }
-
     /**
      * Publish the given type message for the given file in non-verbose mode.
      *
