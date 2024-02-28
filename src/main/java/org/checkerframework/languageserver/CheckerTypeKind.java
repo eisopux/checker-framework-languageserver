@@ -6,18 +6,18 @@ import java.util.Map;
 public class CheckerTypeKind {
     private String checkername;
 
-    private Map<String, String> TypeKind;
+    private Map<String, String> typeKind;
 
     CheckerTypeKind(String checkername, Map<String, String> kindType) {
         this.checkername = checkername;
-        this.TypeKind = kindType;
+        this.typeKind = kindType;
     }
 
-    String getCheckername() {
+    /*package-private*/ String getCheckername() {
         return this.checkername;
     }
 
     Map<String, String> getTypeKind() {
-        return this.TypeKind;
+        return this.typeKind;
     }
 }
