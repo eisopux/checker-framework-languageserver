@@ -273,7 +273,7 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
                     if (typeKinds.size() > 1) {
                         typeMessageBuilder.append(" ").append(typeKind.getValue());
                     }
-                    typeMessageBuilder.append(":").append(typeKind.getKey()).append(location);
+                    typeMessageBuilder.append(": ").append(typeKind.getKey()).append(location);
                     publishTypeMessage(
                             new File(URI.create(entry.getKey())), typeMessageBuilder.toString());
                 }
