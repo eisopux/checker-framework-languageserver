@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.22.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'commons-cli:commons-cli:1.6.0'
-    implementation 'com.google.guava:guava:33.0.0-jre'
+    implementation 'com.google.guava:guava:33.1.0-jre'
     testImplementation 'junit:junit:4.13.2'
     errorprone('com.google.errorprone:error_prone_core:2.26.1')
     errorproneJavac('com.google.errorprone:javac:9+181-r4173-1')
