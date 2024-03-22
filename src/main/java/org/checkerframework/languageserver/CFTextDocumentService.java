@@ -215,177 +215,20 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     public void publish(Map<String, List<javax.tools.Diagnostic<?>>> result) {
         for (Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry : result.entrySet()) {
             List<Diagnostic> diagnostics = new ArrayList<>();
-            Map<String, List<CheckerTypeKind>> uniqueTypeInfo =
-                    processDiagnosticString(entry, diagnostics);
-            publishTypeMessageWithFilter(entry, uniqueTypeInfo);
+
+            for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
+                String message = diagnostic.getMessage(Locale.getDefault());
+                if (message != null && message.contains("lsp.type.information")) {
+                    // this message is for lsp support
+                    File file = new File(URI.create(entry.getKey()));
+                    publishTypeMessage(file, message);
+                } else {
+                    diagnostics.add(convertToLSPDiagnostic(diagnostic));
+                }
+            }
+
             server.publishDiagnostics(new PublishDiagnosticsParams(entry.getKey(), diagnostics));
         }
-    }
-
-    /**
-     * Process Diagnostic strings to separate type message and error message.
-     *
-     * @param entry The Diagnostic entry for getting diagnostic message
-     * @param diagnostics A list for storing checkerframework issued errors
-     * @return TypeMessage processed for non-verbose output
-     */
-    private Map<String, List<CheckerTypeKind>> processDiagnosticString(
-            Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry,
-            List<Diagnostic> diagnostics) {
-        Map<String, List<CheckerTypeKind>> TypeMessage = new HashMap<>();
-        for (javax.tools.Diagnostic<?> diagnostic : entry.getValue()) {
-            String message = diagnostic.getMessage(Locale.getDefault());
-            if (message != null && message.contains("lsp.type.information")) {
-                String checker = getChecker(message);
-                String kind = getKind(message);
-                String type = getType(message);
-                String positionInfo = getPosition(message);
-                if (positionInfo != null) {
-                    if (!TypeMessage.containsKey(positionInfo)) {
-                        List<CheckerTypeKind> checkerTypeKinds = new ArrayList<>();
-                        Map<String, String> kindType = new HashMap<>();
-                        kindType.put(type, kind);
-                        checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
-                        TypeMessage.put(positionInfo, checkerTypeKinds);
-                    } else {
-                        List<CheckerTypeKind> checkerTypeKinds = TypeMessage.get(positionInfo);
-                        boolean foundChecker = false;
-                        for (CheckerTypeKind checkerTypeKind : checkerTypeKinds) {
-                            if (checkerTypeKind.getCheckername().equals(checker)) {
-                                foundChecker = true;
-                                if (!checkerTypeKind.getTypeKind().containsKey(type)) {
-                                    checkerTypeKind.getTypeKind().put(type, kind);
-                                }
-                                break;
-                            }
-                        }
-                        if (!foundChecker) {
-                            Map<String, String> kindType = new HashMap<>();
-                            kindType.put(type, kind);
-                            checkerTypeKinds.add(new CheckerTypeKind(checker, kindType));
-                        }
-                    }
-                }
-            } else {
-                diagnostics.add(convertToLSPDiagnostic(diagnostic));
-            }
-        }
-        return TypeMessage;
-    }
-
-    /**
-     * Publish the given type message for the given file in non-verbose mode.
-     *
-     * @param entry The Diagnostic entry for getting file name string
-     * @param diagnosticString processed for simplicity output
-     */
-    private void publishTypeMessageWithFilter(
-            Map.Entry<String, List<javax.tools.Diagnostic<?>>> entry,
-            Map<String, List<CheckerTypeKind>> diagnosticString) {
-        for (Map.Entry<String, List<CheckerTypeKind>> typeMessage : diagnosticString.entrySet()) {
-            String positionInfo = typeMessage.getKey();
-            for (CheckerTypeKind checkerTypeKind : typeMessage.getValue()) {
-                if (checkerTypeKind.getTypeKind().entrySet().size() == 1) {
-                    for (Map.Entry<String, String> typeKind :
-                            checkerTypeKind.getTypeKind().entrySet()) {
-                        StringBuilder typeMessageBuilder =
-                                new StringBuilder(checkerTypeKind.getCheckername())
-                                        .append(": ")
-                                        .append(typeKind.getKey())
-                                        .append(positionInfo);
-                        publishTypeMessage(
-                                new File(URI.create(entry.getKey())),
-                                typeMessageBuilder.toString());
-                    }
-                } else {
-                    for (Map.Entry<String, String> typeKind :
-                            checkerTypeKind.getTypeKind().entrySet()) {
-                        StringBuilder typeMessageBuilder =
-                                new StringBuilder(checkerTypeKind.getCheckername())
-                                        .append(" ")
-                                        .append(typeKind.getValue())
-                                        .append(":")
-                                        .append(typeKind.getKey())
-                                        .append(positionInfo);
-                        publishTypeMessage(
-                                new File(URI.create(entry.getKey())),
-                                typeMessageBuilder.toString());
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Get checker name from type message in checkerframework.
-     *
-     * @param typeMessage Type message string from checkerframework
-     * @return Checker name from checkerframework e.g. Nullness
-     */
-    private static String getChecker(String typeMessage) {
-        String checkerPrefix = "checker=";
-        int checkerStart = typeMessage.indexOf(checkerPrefix);
-        if (checkerStart != -1) {
-            int checkerEnd = typeMessage.indexOf(";", checkerStart);
-            if (checkerEnd != -1) {
-                String checker =
-                        typeMessage
-                                .substring(checkerStart + checkerPrefix.length(), checkerEnd)
-                                .trim();
-                checker = checker.replace("Subchecker", "").replace("Checker", "").trim();
-                return checker;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get message kind from type message in checkerframework.
-     *
-     * @param typeMessage Type message string from checkerframework
-     * @return Lower case message kind from checkerframework e.g. use/declared
-     */
-    private static String getKind(String typeMessage) {
-        String kindPrefix = "kind=";
-        int kindStart = typeMessage.indexOf(kindPrefix);
-        if (kindStart != -1) {
-            int kindEnd = typeMessage.indexOf(";", kindStart);
-            if (kindEnd != -1) {
-                String kind =
-                        typeMessage.substring(kindStart + kindPrefix.length(), kindEnd).trim();
-                kind = kind.toLowerCase(Locale.ROOT).replace("_type", "");
-                return kind;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get type information from type message in checkerframework.
-     *
-     * @param typeMessage Type Message String from checkerframework
-     * @return Type information from checkerframework e.g. @Nullable Object
-     */
-    private static String getType(String typeMessage) {
-        String typePrefix = "type=";
-        int typeStart = typeMessage.indexOf(typePrefix);
-        if (typeStart != -1) {
-            int typeEnd = typeMessage.indexOf(";", typeStart);
-            return typeMessage.substring(typeStart + typePrefix.length(), typeEnd).trim() + "; ";
-        }
-        return null;
-    }
-
-    /**
-     * Get position range from type message in checkerframework.
-     *
-     * @param typeMessage Type Message String from checkerframework
-     * @return Position range from checkerframework e.g. range=(11, 8, 11, 9)
-     */
-    private static String getPosition(String typeMessage) {
-        int lastDelimiter = typeMessage.lastIndexOf(';');
-        String positionInfo = typeMessage.substring(lastDelimiter + 1).trim();
-        return positionInfo;
     }
 
     /**

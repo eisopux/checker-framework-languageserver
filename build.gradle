@@ -56,7 +56,7 @@ tasks.compileJava {
 spotless {
     java {
         googleJavaFormat().aosp()
-        importOrder('com', 'jdk', 'lib', 'lomlspbok', 'org', 'java', 'javax')
+        importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
         formatAnnotations()
     }
     groovyGradle {
