@@ -299,50 +299,12 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     }
 
     @Override
-    public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(
-            CodeActionParams params) {
+    public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
         List<Either<Command, CodeAction>> actions = new ArrayList<>();
         for (Diagnostic diagnostic : params.getContext().getDiagnostics()) {
             if (!diagnostic.getMessage().contains("lsp.type.information")) {
                 if (diagnostic.getMessage().contains("dereference.of.nullable")) {
-                    CodeAction codeAction = new CodeAction("Add nullcheck");
-                    codeAction.setKind(CodeActionKind.QuickFix);
-                    String uri = params.getTextDocument().getUri();
-                    Range range = params.getRange();
-                    String str = getContentInRange(uri, range);
-                    List<TextEdit> editList = new ArrayList<>();
-                    TextEdit edit1 =
-                            new TextEdit(
-                                    new Range(
-                                            new Position(
-                                                    params.getRange().getStart().getLine(),
-                                                    params.getRange().getStart().getCharacter()),
-                                            new Position(
-                                                    params.getRange().getEnd().getLine(),
-                                                    params.getRange().getEnd().getCharacter())),
-                                    " if ("
-                                            + str
-                                            + " != null) {\n"
-                                            + "            "
-                                            + str
-                                            + ".toString();\n");
-                    TextEdit edit2 =
-                            new TextEdit(
-                                    new Range(
-                                            new Position(
-                                                    params.getRange().getStart().getLine() + 1,
-                                                    params.getRange().getStart().getCharacter()),
-                                            new Position(
-                                                    params.getRange().getEnd().getLine(),
-                                                    params.getRange().getEnd().getCharacter())),
-                                    "        } else {\n"
-                                            + "        //TODO: Implement if the variable is null\n"
-                                            + "        }\n"
-                                            + "     }");
-                    editList.add(edit1);
-                    editList.add(edit2);
-                    codeAction.setEdit(new WorkspaceEdit(Collections.singletonMap(uri, editList)));
-                    codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+                    CodeAction codeAction = createNullCheckCodeAction(params, diagnostic);
                     actions.add(Either.forRight(codeAction));
                 }
             } else {
@@ -350,6 +312,30 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
             }
         }
         return CompletableFuture.completedFuture(actions);
+    }
+
+    private CodeAction createNullCheckCodeAction(CodeActionParams params, Diagnostic diagnostic) {
+        CodeAction codeAction = new CodeAction("Add nullcheck");
+        codeAction.setKind(CodeActionKind.QuickFix);
+        String uri = params.getTextDocument().getUri();
+        Range range = params.getRange();
+        String str = getContentInRange(uri, range);
+        List<TextEdit> editList = new ArrayList<>();
+        TextEdit edit1 = new TextEdit(
+                new Range(
+                        new Position(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter()),
+                        new Position(params.getRange().getEnd().getLine(), params.getRange().getEnd().getCharacter())),
+                " if (" + str + " != null) {\n" + "            " + str + ".toString();\n");
+        TextEdit edit2 = new TextEdit(
+                new Range(
+                        new Position(params.getRange().getStart().getLine() + 1, params.getRange().getStart().getCharacter()),
+                        new Position(params.getRange().getEnd().getLine(), params.getRange().getEnd().getCharacter())),
+                "        } else {\n" + "        //TODO: Implement if the variable is null\n" + "        }\n" + "     }");
+        editList.add(edit1);
+        editList.add(edit2);
+        codeAction.setEdit(new WorkspaceEdit(Collections.singletonMap(uri, editList)));
+        codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+        return codeAction;
     }
 
     private static String getContentInRange(String uri, Range range) {
