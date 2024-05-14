@@ -19,7 +19,7 @@ configurations {
 
 dependencies {
     implementation 'io.github.eisop:checker:3.42.0-eisop3'
-    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.22.0'
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.23.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'commons-cli:commons-cli:1.7.0'
     implementation 'com.google.guava:guava:33.2.0-jre'
