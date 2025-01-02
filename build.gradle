@@ -6,8 +6,8 @@ plugins {
     id 'net.ltgt.errorprone' version '4.1.0'
 }
 
-group 'io.github.eisopux'
-version '0.2.0'
+group = 'io.github.eisopux'
+version = '0.2.0'
 
 repositories {
     mavenCentral()
