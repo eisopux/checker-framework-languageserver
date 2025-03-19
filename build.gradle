@@ -27,7 +27,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 
     if (JavaVersion.current() >= JavaVersion.VERSION_17) {
-        errorprone('com.google.errorprone:error_prone_core:2.36.0')
+        errorprone('com.google.errorprone:error_prone_core:2.37.0')
         errorproneJavac('com.google.errorprone:javac:9+181-r4173-1')
     }
     requireJavadoc('org.plumelib:require-javadoc:1.0.9')
