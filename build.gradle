@@ -18,12 +18,17 @@ configurations {
     requireJavadoc
 }
 
+ext {
+    eisopVersion = '3.49.1-eisop1'
+}
+
 dependencies {
-    implementation 'io.github.eisop:checker:3.49.1-eisop1'
+    implementation "io.github.eisop:checker:$eisopVersion"
+    implementation "io.github.eisop:checker-qual:$eisopVersion"
     implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.24.0'
     implementation 'com.google.code.gson:gson:2.12.1'
     implementation 'commons-cli:commons-cli:1.9.0'
-    implementation 'com.google.guava:guava:33.4.0-jre'
+    implementation 'com.google.guava:guava:33.4.5-jre'
     testImplementation 'junit:junit:4.13.2'
 
     if (JavaVersion.current() >= JavaVersion.VERSION_17) {
