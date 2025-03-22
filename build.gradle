@@ -68,7 +68,7 @@ spotless {
         target '*.gradle'
         importOrder()
         greclipse()  // which formatter Spotless should use to format .gradle files.
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         trimTrailingWhitespace()
     }
 }
