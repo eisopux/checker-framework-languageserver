@@ -19,7 +19,7 @@ configurations {
 }
 
 ext {
-    eisopVersion = '3.49.1-eisop1'
+    eisopVersion = '3.49.3-eisop1'
 }
 
 dependencies {
