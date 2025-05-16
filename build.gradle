@@ -2,9 +2,9 @@ plugins {
     id 'java'
     id 'application'
     // https://plugins.gradle.org/plugin/com.gradleup.shadow
-    id 'com.gradleup.shadow' version '8.3.5'
-    id 'com.diffplug.spotless' version '6.25.0'
-    id 'net.ltgt.errorprone' version '4.1.0'
+    id 'com.gradleup.shadow' version '8.3.6'
+    id 'com.diffplug.spotless' version '7.0.3'
+    id 'net.ltgt.errorprone' version '4.2.0'
 }
 
 group = 'io.github.eisopux'
@@ -18,16 +18,21 @@ configurations {
     requireJavadoc
 }
 
+ext {
+    eisopVersion = '3.49.3-eisop1'
+}
+
 dependencies {
-    implementation 'io.github.eisop:checker:3.42.0-eisop5'
-    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.23.1'
-    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation "io.github.eisop:checker:$eisopVersion"
+    implementation "io.github.eisop:checker-qual:$eisopVersion"
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.24.0'
+    implementation 'com.google.code.gson:gson:2.13.1'
     implementation 'commons-cli:commons-cli:1.9.0'
-    implementation 'com.google.guava:guava:33.4.0-jre'
+    implementation 'com.google.guava:guava:33.4.8-jre'
     testImplementation 'junit:junit:4.13.2'
 
     if (JavaVersion.current() >= JavaVersion.VERSION_17) {
-        errorprone('com.google.errorprone:error_prone_core:2.36.0')
+        errorprone('com.google.errorprone:error_prone_core:2.38.0')
         errorproneJavac('com.google.errorprone:javac:9+181-r4173-1')
     }
     requireJavadoc('org.plumelib:require-javadoc:1.0.9')
@@ -68,7 +73,7 @@ spotless {
         target '*.gradle'
         importOrder()
         greclipse()  // which formatter Spotless should use to format .gradle files.
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         trimTrailingWhitespace()
     }
 }
