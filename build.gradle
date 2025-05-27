@@ -3,7 +3,7 @@ plugins {
     id 'application'
     // https://plugins.gradle.org/plugin/com.gradleup.shadow
     id 'com.gradleup.shadow' version '8.3.6'
-    id 'com.diffplug.spotless' version '7.0.3'
+    id 'com.diffplug.spotless' version '7.0.4'
     id 'net.ltgt.errorprone' version '4.2.0'
 }
 
