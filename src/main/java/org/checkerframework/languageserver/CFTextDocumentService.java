@@ -4,6 +4,12 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.languageserver.quickfix.NullPointerDereferenceQuickFixProvider;
+import org.checkerframework.languageserver.quickfix.QuickFixProvider;
+import org.checkerframework.languageserver.quickfix.QuickFixRegistry;
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
@@ -17,6 +23,7 @@ import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.io.File;
@@ -67,9 +74,14 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
     private final Map<File, RangeMap<ComparablePosition, List<String>>> filesToTypeInfo =
             new HashMap<>();
 
+    /** The quick fix registry for the Checker Framework document service. */
+    QuickFixRegistry quickFixRegistry = new QuickFixRegistry();
+
     /** Default constructor for Checker Framework document service. */
     CFTextDocumentService(CFLanguageServer server) {
         this.server = server;
+        quickFixRegistry.registerProvider(
+                "dereference.of.nullable", new NullPointerDereferenceQuickFixProvider());
     }
 
     /** Setter for the executor field. */
@@ -283,5 +295,18 @@ public class CFTextDocumentService implements TextDocumentService, Publisher {
         typeInfoForPosition.add(typeInfo);
         currentTypeInfo.put(
                 com.google.common.collect.Range.closed(start, end), typeInfoForPosition);
+    }
+
+    @Override
+    public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(
+            CodeActionParams params) {
+        List<Either<Command, CodeAction>> actions = new ArrayList<>();
+        for (Diagnostic diagnostic : params.getContext().getDiagnostics()) {
+            QuickFixProvider provider = quickFixRegistry.getProvider(diagnostic);
+            if (provider != null && provider.canHandle(diagnostic)) {
+                actions.addAll(provider.getQuickFixes(diagnostic, params));
+            }
+        }
+        return CompletableFuture.completedFuture(actions);
     }
 }
