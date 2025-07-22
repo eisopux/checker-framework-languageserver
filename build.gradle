@@ -35,7 +35,7 @@ dependencies {
         errorprone('com.google.errorprone:error_prone_core:2.38.0')
         errorproneJavac('com.google.errorprone:javac:9+181-r4173-1')
     }
-    requireJavadoc('org.plumelib:require-javadoc:1.0.9')
+    requireJavadoc('org.plumelib:require-javadoc:2.0.0')
 }
 
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
@@ -43,6 +43,16 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
     mainClass = 'org.plumelib.javadoc.RequireJavadoc'
     classpath = configurations.requireJavadoc
     args 'src/main/java'
+    jvmArgs += [
+        '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+        '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+        '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+        '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+        '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+        '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    ]
 }
 
 application {
