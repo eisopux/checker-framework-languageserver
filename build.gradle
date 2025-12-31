@@ -27,7 +27,7 @@ dependencies {
     implementation "io.github.eisop:checker-qual:$eisopVersion"
     implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.24.0'
     implementation 'com.google.code.gson:gson:2.13.2'
-    implementation 'commons-cli:commons-cli:1.10.0'
+    implementation 'commons-cli:commons-cli:1.11.0'
     implementation 'com.google.guava:guava:33.5.0-jre'
     testImplementation 'junit:junit:4.13.2'
 
