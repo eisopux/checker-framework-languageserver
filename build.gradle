@@ -70,7 +70,7 @@ shadowJar {
 
 tasks.withType(JavaCompile) { compilationTask ->
     options.compilerArgs += ['-Xlint', '-Werror']
-    options.errorprone.enabled = JavaVersion.current() >= JavaVersion.VERSION_17
+    options.errorprone.enabled = JavaVersion.current() >= JavaVersion.VERSION_21
 }
 
 spotless {
